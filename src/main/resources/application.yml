@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: VolunteerHub
+  datasource:
+    url: jdbc:postgresql://localhost:5432/volunteer_hub
+    username: postgres
+    password: 1382005a
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+server:
+  post: 8080
+  address: 0.0.0.0
+  servlet:
+    context-path: /volunteer-hub
