@@ -36,7 +36,10 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail()))
             throw new RuntimeException("user existed");
 
-        var role = roleRepository.findByRole(RoleEnum.VOLUNTEER);
+        if (request.getRole() == RoleEnum.ADMIN)
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        Roles role = roleRepository.findByRole(request.getRole());
 
         Users user = Users.builder()
                 .email(request.getEmail())
