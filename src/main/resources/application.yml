@@ -18,6 +18,6 @@ server:
   servlet:
     context-path: /
 jwt:
-  signerKey: "Rc8al3ynqFVftBEV36zVbQAFhOX10h3HkrKGVmAnOipKtNIExStX4jcmligLAcNG"
+  signerKey: "V6MwVJfHlK1qrOBkjgcc5r4MYr4cLU74mnoL+kz5WEhPAIVQkw16Yo269Tkma26s"
   valid-duration: 36000 # in seconds
   refreshable-duration: 36000

@@ -1,6 +1,5 @@
 package com.example.VolunteerHub.entity;
 
-import com.example.VolunteerHub.entity.key.UserRolesKey;
 import com.example.VolunteerHub.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,5 +26,5 @@ public class Roles {
 
     // user
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<UserRoles> userRoles = new ArrayList<>();
+    List<Users> userRoles = new ArrayList<>();
 }

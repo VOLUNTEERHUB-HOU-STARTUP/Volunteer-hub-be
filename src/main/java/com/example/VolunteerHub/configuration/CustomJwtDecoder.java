@@ -5,6 +5,10 @@ import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
 import com.example.VolunteerHub.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -22,6 +26,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     @Value("${jwt.signerKey}")
     private String SIGNER_KEY;
 
+    @Autowired
     private AuthenticationService authenticationService;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
@@ -37,7 +42,7 @@ public class CustomJwtDecoder implements JwtDecoder {
             );
 
             if (!response.isValid()) {
-                throw new JwtException("Token is invalid");
+                throw new AppException(ErrorCode.TOKEN_INVALID);
             }
         } catch (RuntimeException e) {
             throw new AppException(ErrorCode.UNAUTHORIZED);

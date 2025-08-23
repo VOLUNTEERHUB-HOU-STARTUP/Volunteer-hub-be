@@ -1,13 +1,10 @@
 package com.example.VolunteerHub.entity;
 
-import com.example.VolunteerHub.entity.key.UserRolesKey;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -37,6 +34,7 @@ public class Users {
     Instant createdAt;
 
     // role
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<UserRoles> userRoles = new ArrayList<>();
+    @ManyToOne
+            @JoinColumn(name = "role_id")
+    Roles role;
 }
