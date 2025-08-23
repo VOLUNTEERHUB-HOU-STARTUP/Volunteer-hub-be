@@ -1,8 +1,11 @@
 package com.example.VolunteerHub.service;
 
+import com.example.VolunteerHub.dto.request.UserChangeRoleRequest;
 import com.example.VolunteerHub.dto.request.UserCreationRequest;
+import com.example.VolunteerHub.dto.request.UserDeleteAccountRequest;
 import com.example.VolunteerHub.dto.response.UserCreationResponse;
 import com.example.VolunteerHub.dto.response.UserResponse;
+import com.example.VolunteerHub.entity.Roles;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
@@ -71,5 +74,54 @@ public class UserService {
                 .isActive(u.isActive())
                 .createdAt(u.getCreatedAt())
                 .build()).toList();
+    }
+
+    public void changeUserRole(UserChangeRoleRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        var adminRole = admin.getRole().getRole();
+        if (adminRole != RoleEnum.ADMIN)
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        Users user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Roles role = roleRepository.findByRole(request.getNewRole());
+
+        if (role.getRole() == RoleEnum.ADMIN)
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        user.setRole(role);
+        userRepository.save(user);
+    }
+
+    public void deleteAccount(UserDeleteAccountRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (currentUser.getRole().getRole() == RoleEnum.ADMIN) {
+            Users targetUser = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+            if (targetUser.getRole().getRole() == RoleEnum.ADMIN) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+
+            userRepository.delete(targetUser);
+            return;
+        }
+
+        if (!email.equals(request.getEmail())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        userRepository.delete(currentUser);
     }
 }

@@ -18,7 +18,7 @@ public class Users {
     @Column(name = "id")
     int id;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     String email;
 
     @Column(name = "password")
@@ -35,6 +35,6 @@ public class Users {
 
     // role
     @ManyToOne
-            @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id")
     Roles role;
 }

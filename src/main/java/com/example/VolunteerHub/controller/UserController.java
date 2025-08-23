@@ -1,6 +1,8 @@
 package com.example.VolunteerHub.controller;
 
+import com.example.VolunteerHub.dto.request.UserChangeRoleRequest;
 import com.example.VolunteerHub.dto.request.UserCreationRequest;
+import com.example.VolunteerHub.dto.request.UserDeleteAccountRequest;
 import com.example.VolunteerHub.dto.response.ApiResponse;
 import com.example.VolunteerHub.dto.response.UserCreationResponse;
 import com.example.VolunteerHub.dto.response.UserResponse;
@@ -33,4 +35,17 @@ public class UserController {
                 .build();
     }
 
+    @PostMapping("/change-role")
+    ApiResponse<Void> changeUserRole(@RequestBody UserChangeRoleRequest request) {
+        userService.changeUserRole(request);
+        return ApiResponse.<Void>builder()
+                .build();
+    }
+
+    @DeleteMapping("/delete")
+    ApiResponse<Void> deleteAccount(@RequestBody UserDeleteAccountRequest request) {
+        userService.deleteAccount(request);
+        return ApiResponse.<Void>builder()
+                .build();
+    }
 }
