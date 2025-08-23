@@ -16,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -77,6 +78,25 @@ public class UserService {
                 .isActive(u.isActive())
                 .createdAt(u.getCreatedAt())
                 .build()).toList();
+    }
+
+    public UserResponse getMyInfo() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Roles role = roleRepository.findByRole(user.getRole().getRole());
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(role.getRole())
+                .isActive(user.isActive())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 
     public void changeUserRole(UserChangeRoleRequest request) {

@@ -35,6 +35,13 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/my-info")
+    ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
+
     @PostMapping("/change-role")
     ApiResponse<Void> changeUserRole(@RequestBody UserChangeRoleRequest request) {
         userService.changeUserRole(request);
