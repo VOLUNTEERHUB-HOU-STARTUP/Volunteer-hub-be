@@ -1,6 +1,16 @@
 Tóm tắt API
 Dự án này cung cấp một bộ API RESTful để quản lý người dùng và xác thực. 
-api gốc: http://localhost:8080
+api gốc: 
+  http://localhost:8080
+
+api không cần token để authen:
+  "/api/users/create",
+  "/auth/token",
+  "/auth/logout",
+  "/auth/refresh",
+  "/auth/introspect"
+
+
 1. API Xác thực (/auth)
 Các API này chịu trách nhiệm xử lý việc đăng nhập, kiểm tra và làm mới token.
 
