@@ -5,6 +5,9 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -14,9 +17,9 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Users {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    int id;
+    UUID id;
 
     @Column(name = "email", unique = true)
     String email;
@@ -33,8 +36,12 @@ public class Users {
     @Column(name = "created_at")
     Instant createdAt;
 
-    // role
+    // roles
     @ManyToOne
     @JoinColumn(name = "role_id")
     Roles role;
+
+    // events
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Events> events = new ArrayList<>();
 }

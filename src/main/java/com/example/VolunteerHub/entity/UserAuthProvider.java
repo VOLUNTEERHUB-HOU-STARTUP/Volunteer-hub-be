@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -15,8 +17,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 public class UserAuthProvider {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    UUID id;
 
     AuthProviderEnum provider;
     String providerId;  // email v fb
