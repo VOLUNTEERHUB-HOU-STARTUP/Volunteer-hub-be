@@ -1,6 +1,7 @@
 package com.example.VolunteerHub.service;
 
 import com.example.VolunteerHub.dto.request.EventCreationRequest;
+import com.example.VolunteerHub.dto.response.EventResponse;
 import com.example.VolunteerHub.entity.Events;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.enums.RoleEnum;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -46,5 +49,34 @@ public class EventService {
                 .build();
 
         eventRepository.save(event);
+    }
+
+    public List<EventResponse> getListEvent() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        List<Events> eventList = eventRepository.findAll();
+
+        return eventList.stream()
+                .filter(event ->
+                        user.getRole().getRole() == RoleEnum.ADMIN || event.isPublished()
+                )
+                .map(event -> EventResponse.builder()
+                        .id(event.getId())
+                        .userId(event.getUser().getId())
+                        .fullName(event.getUser().getProfile().getFullName())
+                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
+                        .title(event.getTitle())
+                        .description(event.getDescription())
+                        .slug(event.getSlug())
+                        .isPublished(event.isPublished())
+                        .maxVolunteer(event.getMaxVolunteer())
+                        .startAt(event.getStartAt())
+                        .endAt(event.getEndAt())
+                        .build())
+                .toList();
     }
 }

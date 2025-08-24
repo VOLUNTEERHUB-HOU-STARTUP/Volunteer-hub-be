@@ -28,14 +28,9 @@ public class Users {
     @Column(name = "password")
     String password;
 
-    @Column(name = "full_name")
-    String fullName;
-
-    @Column(name = "is_active")
-    boolean isActive;
-
-    @Column(name = "created_at")
-    LocalDateTime createdAt;
+    // profiles
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    Profiles profile;
 
     // roles
     @ManyToOne

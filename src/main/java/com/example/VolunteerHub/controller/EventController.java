@@ -2,14 +2,14 @@ package com.example.VolunteerHub.controller;
 
 import com.example.VolunteerHub.dto.request.EventCreationRequest;
 import com.example.VolunteerHub.dto.response.ApiResponse;
+import com.example.VolunteerHub.dto.response.EventResponse;
 import com.example.VolunteerHub.service.EventService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +22,13 @@ public class EventController {
     ApiResponse<Void> createEvent(@RequestBody EventCreationRequest request) {
         eventService.createEvent(request);
         return ApiResponse.<Void>builder()
+                .build();
+    }
+
+    @GetMapping("")
+    ApiResponse<List<EventResponse>> getListEvent() {
+        return ApiResponse.<List<EventResponse>>builder()
+                .result(eventService.getListEvent())
                 .build();
     }
 }
