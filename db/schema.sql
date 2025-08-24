@@ -8,26 +8,15 @@ create table users (
     password text not null,
     full_name text not null,
     is_active boolean not null default true,
-    created_at timestamptz not null default now()
+    created_at timestamptz not null default now(),
+	role_id int,
+
+    constraint fk_role foreign key (role_id) references roles(id) on delete set null
 );
 
 create table roles (
     id serial primary key,
     role text unique not null -- admin, organizer, volunteer
-);
-
-create table user_roles (
-    user_id int references users(id) on delete cascade,
-    role_id int references roles(id) on delete cascade,
-    primary key(user_id, role_id)
-);
-
-create table organizations (
-    id serial primary key,
-    owner_id int not null references users(id) on delete restrict,
-    name text not null,
-    slug text unique not null, -- kiểu định danh tổ chức vd: thanh-nien-tinh-nguyen
-    created_at timestamptz not null default now()
 );
 
 create table events (
@@ -62,7 +51,6 @@ create table event_shifts (
     check (capacity >= 0)
 );
 
--- applications
 create table applications (
     id serial primary key,
     event_id int not null references events(id) on delete cascade,
@@ -96,5 +84,3 @@ create table messages (
     body text,
     sent_at timestamptz not null default now()
 );
-
-
