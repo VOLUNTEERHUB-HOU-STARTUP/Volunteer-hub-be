@@ -1,7 +1,9 @@
 package com.example.VolunteerHub.configuration;
 
+import com.example.VolunteerHub.entity.Profiles;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.enums.RoleEnum;
+import com.example.VolunteerHub.repository.ProfileRepository;
 import com.example.VolunteerHub.repository.RoleRepository;
 import com.example.VolunteerHub.repository.UserRepository;
 import lombok.AccessLevel;
@@ -24,11 +26,12 @@ import java.time.LocalDateTime;
 public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
+    ProfileRepository profileRepository;
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "spring",
-            value = "datasource.driverClassName",
+            prefix = "spring.datasource",
+            value = "driver-class-name",
             havingValue = "org.postgresql.Driver")
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {
@@ -39,9 +42,16 @@ public class ApplicationInitConfig {
                         .email("admin@system.com")
                         .password(passwordEncoder.encode("admin"))
                         .role(role)
+                        .build();
+
+                Profiles profile = Profiles.builder()
+                        .user(user)
+                        .fullName("admin.system")
                         .isActive(true)
                         .createdAt(LocalDateTime.now())
                         .build();
+
+                user.setProfile(profile);
                 userRepository.save(user);
 
                 log.warn("admin user has been created with default password: admin. " +
