@@ -21,6 +21,10 @@ public class Profiles {
     @Column(name = "full_name", nullable = false)
     String fullName;
 
+    @Column(name = "last_updated_name")
+    @Builder.Default
+    LocalDateTime lastUpdatedName = LocalDateTime.now();
+
     @Column(name = "avatar_url")
     @Builder.Default
     String avatarUrl = null;
@@ -32,9 +36,13 @@ public class Profiles {
     @Column(name = "is_active")
     boolean isActive;
 
+    @Column(name = "updated_at")
+    @Builder.Default
+    LocalDateTime updatedAt = LocalDateTime.now();
+
     @Column(name = "created_at")
     @Builder.Default
-    LocalDateTime createdAt = LocalDateTime.now();
+    LocalDateTime createdAt = LocalDateTime.now(); // YYYY-MM-ddTHH:mm:ss
 
     // users
     @OneToOne
