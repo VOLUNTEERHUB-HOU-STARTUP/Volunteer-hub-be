@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -17,6 +18,6 @@ public class UserResponse {
     String email;
     String fullName;
     boolean isActive;
-    Instant createdAt;
+    LocalDateTime createdAt;
     RoleEnum role;
 }

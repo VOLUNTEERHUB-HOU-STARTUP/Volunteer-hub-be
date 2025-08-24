@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -47,7 +48,7 @@ public class UserService {
                 .fullName(request.getFullName())
                 .role(role)
                 .isActive(true)
-                .createdAt(Instant.now())
+                .createdAt(LocalDateTime.now())
                 .build();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 

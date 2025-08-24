@@ -4,8 +4,11 @@ import com.example.VolunteerHub.Utils.SlugUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cglib.core.Local;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -34,10 +37,10 @@ public class Events {
     String slug;
 
     @Column(name = "start_at")
-    Instant startAt;
+    LocalDateTime startAt;
 
     @Column(name = "end_at")
-    Instant endAt;
+    LocalDateTime endAt;
 
     @Column(name = "max_volunteer")
     int maxVolunteer;
@@ -46,9 +49,11 @@ public class Events {
     boolean isPublished;
 
     @Column(name = "created_at")
-    Instant createdAt = Instant.now();
+    LocalDateTime createdAt;
 
     //auto generate title -> slug
+    @PrePersist
+    @PreUpdate
     public void generateSlung() {
         if (this.title != null && (this.slug == null || this.slug.isEmpty())) {
             this.slug = SlugUtil.toSlug(this.title);

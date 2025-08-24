@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Configuration
@@ -39,7 +40,7 @@ public class ApplicationInitConfig {
                         .password(passwordEncoder.encode("admin"))
                         .role(role)
                         .isActive(true)
-                        .createdAt(Instant.now())
+                        .createdAt(LocalDateTime.now())
                         .build();
                 userRepository.save(user);
 

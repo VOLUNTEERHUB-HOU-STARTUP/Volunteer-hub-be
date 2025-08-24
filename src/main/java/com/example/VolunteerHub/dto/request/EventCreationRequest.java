@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -13,8 +14,9 @@ import java.time.Instant;
 @Builder
 public class EventCreationRequest {
     String title;
-    Instant startAt;
-    Instant endAt;
+    String description;
+    LocalDateTime startAt;
+    LocalDateTime endAt;
     int maxVolunteer;
     boolean isPublished;
 }

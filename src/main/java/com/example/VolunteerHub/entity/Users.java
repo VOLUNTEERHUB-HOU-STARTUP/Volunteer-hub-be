@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class Users {
     boolean isActive;
 
     @Column(name = "created_at")
-    Instant createdAt;
+    LocalDateTime createdAt;
 
     // roles
     @ManyToOne
