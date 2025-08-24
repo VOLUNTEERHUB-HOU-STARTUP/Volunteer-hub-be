@@ -35,7 +35,7 @@ public class EventService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var role = user.getRole().getRole();
-        if (role != RoleEnum.VOLUNTEER)
+        if (role == RoleEnum.VOLUNTEER)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         Events event = Events.builder()
