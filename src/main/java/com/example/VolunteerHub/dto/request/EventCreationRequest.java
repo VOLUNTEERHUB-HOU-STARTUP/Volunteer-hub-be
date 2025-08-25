@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 public class EventCreationRequest {
     String title;
     String description;
+    float salary;
+    String location;
     LocalDateTime startAt;
     LocalDateTime endAt;
     int maxVolunteer;

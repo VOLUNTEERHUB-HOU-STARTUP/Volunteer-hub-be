@@ -22,8 +22,8 @@ public enum ErrorCode {
     NAME_CHANGE_TOO_SOON(1101, "name change too soon", HttpStatus.BAD_REQUEST),
     NAME_INVALID(1102, "name is limited to 3-20 letters only", HttpStatus.BAD_REQUEST),
 
-    // 2000 - 2099: Post
-    POST_NOT_EXISTED(2000, "post not existed", HttpStatus.NOT_FOUND),
+    // 2000 - 2099: Event
+    EVENT_NOT_EXISTED(2000, "event not existed", HttpStatus.NOT_FOUND),
 
     // 3000 - 3099: Friend Request & Friendship
     INVALID_FRIEND_REQUEST_SENT(3000, "invalid friend request sent", HttpStatus.BAD_REQUEST),

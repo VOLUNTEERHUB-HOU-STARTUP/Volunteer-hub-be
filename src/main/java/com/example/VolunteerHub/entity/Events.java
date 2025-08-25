@@ -36,6 +36,12 @@ public class Events {
     @Column(name = "slug", unique = true, nullable = false)
     String slug;
 
+    @Column(name = "salary")
+    float salary;
+
+    @Column(name = "location", nullable = false)
+    String location;
+
     @Column(name = "start_at")
     LocalDateTime startAt;
 

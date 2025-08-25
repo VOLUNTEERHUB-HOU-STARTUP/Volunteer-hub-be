@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.controller;
 
+import com.example.VolunteerHub.dto.request.EventChangePublishedRequest;
 import com.example.VolunteerHub.dto.request.EventCreationRequest;
 import com.example.VolunteerHub.dto.response.ApiResponse;
 import com.example.VolunteerHub.dto.response.EventResponse;
@@ -29,6 +30,13 @@ public class EventController {
     ApiResponse<List<EventResponse>> getListEvent() {
         return ApiResponse.<List<EventResponse>>builder()
                 .result(eventService.getListEvent())
+                .build();
+    }
+
+    @PostMapping("/change")
+    ApiResponse<EventResponse> changePublished(@RequestBody EventChangePublishedRequest request) {
+        return ApiResponse.<EventResponse>builder()
+                .result(eventService.changePublished(request))
                 .build();
     }
 }

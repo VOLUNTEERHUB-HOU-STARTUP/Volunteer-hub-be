@@ -19,6 +19,8 @@ public class EventResponse {
     String title;
     String slug;
     String description;
+    float salary;
+    String location;
     LocalDateTime startAt;
     LocalDateTime endAt;
     int maxVolunteer;
