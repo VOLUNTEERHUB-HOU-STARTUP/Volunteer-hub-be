@@ -2,7 +2,9 @@ package com.example.VolunteerHub.service;
 
 import com.example.VolunteerHub.dto.request.EventChangePublishedRequest;
 import com.example.VolunteerHub.dto.request.EventCreationRequest;
+import com.example.VolunteerHub.dto.response.EventMediaResponse;
 import com.example.VolunteerHub.dto.response.EventResponse;
+import com.example.VolunteerHub.entity.EventMedias;
 import com.example.VolunteerHub.entity.Events;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.enums.RoleEnum;
@@ -47,8 +49,24 @@ public class EventService {
                 .startAt(request.getStartAt())
                 .endAt(request.getEndAt())
                 .isPublished(false)
+                .eventMedia(request.getListEventMedia().stream().map(response ->
+                        EventMedias.builder()
+                                .mediaType(response.getMediaType())
+                                .mediaUrl(response.getMediaUrl())
+                                .build()).toList())
+                .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
+
+        List<EventMedias> eventMediasList =
+                request.getListEventMedia().stream().map(e ->
+                        EventMedias.builder()
+                                .event(event)
+                                .mediaType(e.getMediaType())
+                                .mediaUrl(e.getMediaUrl())
+                                .build()).toList();
+
+        event.setEventMedia(eventMediasList);
 
         eventRepository.save(event);
     }
@@ -78,8 +96,16 @@ public class EventService {
                         .location(event.getLocation())
                         .isPublished(event.isPublished())
                         .maxVolunteer(event.getMaxVolunteer())
+                        .eventMedia(event.getEventMedia().stream().map(media ->
+                                EventMediaResponse.builder()
+                                        .id(media.getId())
+                                        .mediaType(media.getMediaType())
+                                        .mediaUrl(media.getMediaUrl())
+                                        .build()).toList())
                         .startAt(event.getStartAt())
                         .endAt(event.getEndAt())
+                        .createdAt(event.getCreatedAt())
+                        .updatedAt(event.getUpdatedAt())
                         .build())
                 .toList();
     }
@@ -115,8 +141,16 @@ public class EventService {
                 .location(event.getLocation())
                 .isPublished(event.isPublished())
                 .maxVolunteer(event.getMaxVolunteer())
+                .eventMedia(event.getEventMedia().stream().map(media ->
+                        EventMediaResponse.builder()
+                                .id(media.getId())
+                                .mediaType(media.getMediaType())
+                                .mediaUrl(media.getMediaUrl())
+                                .build()).toList())
                 .startAt(event.getStartAt())
                 .endAt(event.getEndAt())
+                .updatedAt(event.getUpdatedAt())
+                .createdAt(event.getCreatedAt())
                 .build();
     }
 }
