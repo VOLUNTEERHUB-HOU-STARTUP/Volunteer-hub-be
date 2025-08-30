@@ -15,6 +15,9 @@ import com.example.VolunteerHub.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -71,14 +74,16 @@ public class EventService {
         eventRepository.save(event);
     }
 
-    public List<EventResponse> getListEvent() {
+    public List<EventResponse> getListEventWithPaging(int page, int size) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        List<Events> eventList = eventRepository.findAll();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
 
         return eventList.stream()
                 .filter(event ->

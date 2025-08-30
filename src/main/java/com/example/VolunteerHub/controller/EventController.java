@@ -27,9 +27,12 @@ public class EventController {
     }
 
     @GetMapping("")
-    ApiResponse<List<EventResponse>> getListEvent() {
+    ApiResponse<List<EventResponse>> getListEventWithPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return ApiResponse.<List<EventResponse>>builder()
-                .result(eventService.getListEvent())
+                .result(eventService.getListEventWithPaging(page, size))
                 .build();
     }
 
