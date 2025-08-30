@@ -1,47 +1,65 @@
-create extension if not exists citext;
-create extension if not exists "pgcrypto"; -- hỗ trợ UUID
-
-create type application_status as enum ('pending','accepted','rejected','withdrawn');
-
--- roles
-create table roles (
-    id uuid primary key default gen_random_uuid(),
-    role text unique not null -- admin, organizer, volunteer
+CREATE TABLE roles (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- users: có thể là cá nhân hoặc tổ chức
-create table users (
-    id uuid primary key default gen_random_uuid(),
-    email citext unique not null,
-    password text not null,
-    full_name text not null,
-    is_active boolean not null default true,
-    created_at timestamptz not null default now(),
-    role_id uuid,
-    constraint fk_role foreign key (role_id) references roles(id) on delete set null
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
--- events do user (tổ chức) tạo
-create table events (
-    id uuid primary key default gen_random_uuid(),
-    user_id uuid not null references users(id) on delete cascade,
-    title text not null,
-    slug text unique not null,
-    start_at timestamptz not null,
-    end_at timestamptz not null,
-    max_volunteers int,
-    is_published boolean not null default false,
-    created_at timestamptz not null default now(),
-    check (end_at > start_at)
+CREATE TABLE profiles (
+    user_id BIGINT PRIMARY KEY,
+    avatar_url VARCHAR(500),
+    bio TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- event_media
-create table event_media (
-    id uuid primary key default gen_random_uuid(),
-    event_id uuid not null references events(id) on delete cascade,
-    media_type text not null check(media_type in ('VIDEO', 'IMAGE')),
-    url text not null,
-    created_at timestamptz not null default now()
+CREATE TABLE user_auth_provider (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    provider VARCHAR(50) NOT NULL,
+    provider_id VARCHAR(255),
+
+    CONSTRAINT fk_auth_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE invalidated_token (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(500) NOT NULL UNIQUE,
+    expiry_time TIMESTAMP NOT NULL
+);
+
+CREATE TABLE events (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    location VARCHAR(255),
+    event_date TIMESTAMP,
+    published BOOLEAN DEFAULT FALSE,
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_events_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE event_medias (
+    id BIGSERIAL PRIMARY KEY,
+    event_id BIGINT NOT NULL,
+    media_url VARCHAR(500) NOT NULL,
+    media_type VARCHAR(50),
+
+    CONSTRAINT fk_event_medias_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
 
 -- shifts
