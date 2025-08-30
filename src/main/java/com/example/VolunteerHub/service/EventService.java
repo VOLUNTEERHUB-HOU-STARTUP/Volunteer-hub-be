@@ -7,6 +7,7 @@ import com.example.VolunteerHub.dto.response.EventResponse;
 import com.example.VolunteerHub.entity.EventMedias;
 import com.example.VolunteerHub.entity.Events;
 import com.example.VolunteerHub.entity.Users;
+import com.example.VolunteerHub.enums.MediaTypeEnum;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
@@ -20,10 +21,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +35,7 @@ import java.util.List;
 public class EventService {
     EventRepository eventRepository;
     UserRepository userRepository;
+    CloudinaryService cloudinaryService;
 
     public void createEvent(EventCreationRequest request) {
         var context = SecurityContextHolder.getContext();
@@ -43,6 +48,11 @@ public class EventService {
         if (role == RoleEnum.VOLUNTEER)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
+        boolean isExistedEventTitle = eventRepository.isExistedByEventTitle(request.getTitle());
+
+        if (isExistedEventTitle)
+            throw new AppException(ErrorCode.EVENT_EXISTED);
+
         Events event = Events.builder()
                 .user(user)
                 .title(request.getTitle())
@@ -52,24 +62,30 @@ public class EventService {
                 .startAt(request.getStartAt())
                 .endAt(request.getEndAt())
                 .isPublished(false)
-                .eventMedia(request.getListEventMedia().stream().map(response ->
-                        EventMedias.builder()
-                                .mediaType(response.getMediaType())
-                                .mediaUrl(response.getMediaUrl())
-                                .build()).toList())
+                .deadline(request.getDeadline())
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        List<EventMedias> eventMediasList =
-                request.getListEventMedia().stream().map(e ->
-                        EventMedias.builder()
-                                .event(event)
-                                .mediaType(e.getMediaType())
-                                .mediaUrl(e.getMediaUrl())
-                                .build()).toList();
+        for (MultipartFile thisFile : request.getListEventMedia()) {
+            if (!thisFile.isEmpty()) {
+                Map<String, String> file;
 
-        event.setEventMedia(eventMediasList);
+                try {
+                    file = cloudinaryService.uploadFile(thisFile);
+                } catch (IOException e) {
+                    throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+                }
+
+                String fileUrl = file.get("url");
+                String fileType = file.get("type");
+
+                EventMedias.builder()
+                        .mediaType(fileType.equals("VIDEO") ? MediaTypeEnum.VIDEO : MediaTypeEnum.IMAGE)
+                        .mediaUrl(fileUrl)
+                        .build();
+            }
+        }
 
         eventRepository.save(event);
     }
@@ -109,6 +125,7 @@ public class EventService {
                                         .build()).toList())
                         .startAt(event.getStartAt())
                         .endAt(event.getEndAt())
+                        .deadline(event.getDeadline())
                         .createdAt(event.getCreatedAt())
                         .updatedAt(event.getUpdatedAt())
                         .build())
@@ -154,6 +171,7 @@ public class EventService {
                                 .build()).toList())
                 .startAt(event.getStartAt())
                 .endAt(event.getEndAt())
+                .deadline(event.getDeadline())
                 .updatedAt(event.getUpdatedAt())
                 .createdAt(event.getCreatedAt())
                 .build();

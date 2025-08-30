@@ -29,4 +29,5 @@ public class EventResponse {
     boolean isPublished;
     LocalDateTime updatedAt;
     LocalDateTime createdAt;
+    LocalDateTime deadline;
 }

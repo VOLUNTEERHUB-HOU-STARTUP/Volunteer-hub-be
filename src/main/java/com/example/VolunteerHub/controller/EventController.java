@@ -8,6 +8,7 @@ import com.example.VolunteerHub.service.EventService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +20,8 @@ import java.util.List;
 public class EventController {
     EventService eventService;
 
-    @PostMapping("/create")
-    ApiResponse<Void> createEvent(@RequestBody EventCreationRequest request) {
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<Void> createEvent(@ModelAttribute EventCreationRequest request) {
         eventService.createEvent(request);
         return ApiResponse.<Void>builder()
                 .build();

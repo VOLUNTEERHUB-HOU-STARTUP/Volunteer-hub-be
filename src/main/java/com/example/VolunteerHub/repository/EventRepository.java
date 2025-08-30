@@ -13,4 +13,9 @@ import java.util.UUID;
 public interface EventRepository extends JpaRepository<Events, UUID> {
     @Query("select e from Events e")
     Page<Events> getEventWithPaging(Pageable pageable);
+
+    @Query("select case " +
+            "when count(e) > 0 then true else false end from Events e " +
+            "where e.title = :title")
+    boolean isExistedByEventTitle(String title);
 }

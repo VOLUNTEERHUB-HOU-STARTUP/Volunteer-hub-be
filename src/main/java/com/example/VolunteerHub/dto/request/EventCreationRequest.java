@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -29,5 +30,5 @@ public class EventCreationRequest {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime deadline;
     int maxVolunteer;
-    List<EventMediaCreationRequest> listEventMedia;
+    List<MultipartFile> listEventMedia;
 }
