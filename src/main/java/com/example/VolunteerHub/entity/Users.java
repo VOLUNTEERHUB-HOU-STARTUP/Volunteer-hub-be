@@ -40,4 +40,8 @@ public class Users {
     // events
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Events> events = new ArrayList<>();
+
+    // event volunteer
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<EventVolunteers> eventVolunteers;
 }

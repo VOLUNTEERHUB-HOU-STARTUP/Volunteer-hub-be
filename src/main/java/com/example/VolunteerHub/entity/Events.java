@@ -83,4 +83,8 @@ public class Events {
             this.slug = SlugUtil.toSlug(this.title);
         }
     }
+
+    // event volunteer
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<EventVolunteers> eventVolunteers;
 }
