@@ -28,6 +28,10 @@ public class Users {
     @Column(name = "password")
     String password;
 
+//    boolean email_verified;
+//    String email_verification_token;
+//    LocalDateTime email_verification_expires;
+
     // profiles
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     Profiles profile;

@@ -103,6 +103,49 @@ public class EventService {
 
         return eventList.stream()
                 .filter(event ->
+                        LocalDateTime.now().isBefore(event.getEndAt()) &&
+                        (user.getRole().getRole() == RoleEnum.ADMIN || event.isPublished())
+                )
+                .map(event -> EventResponse.builder()
+                        .id(event.getId())
+                        .userId(event.getUser().getId())
+                        .fullName(event.getUser().getProfile().getFullName())
+                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
+                        .title(event.getTitle())
+                        .description(event.getDescription())
+                        .slug(event.getSlug())
+                        .salary(event.getSalary())
+                        .location(event.getLocation())
+                        .isPublished(event.isPublished())
+                        .maxVolunteer(event.getMaxVolunteer())
+                        .eventMedia(event.getEventMedia().stream().map(media ->
+                                EventMediaResponse.builder()
+                                        .id(media.getId())
+                                        .mediaType(media.getMediaType())
+                                        .mediaUrl(media.getMediaUrl())
+                                        .build()).toList())
+                        .startAt(event.getStartAt())
+                        .endAt(event.getEndAt())
+                        .deadline(event.getDeadline())
+                        .createdAt(event.getCreatedAt())
+                        .updatedAt(event.getUpdatedAt())
+                        .build())
+                .toList();
+    }
+
+    public List<EventResponse> getListEventWithVolunteerRole(int page, int size) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
+
+        return eventList.stream()
+                .filter(event ->
                         user.getRole().getRole() == RoleEnum.ADMIN || event.isPublished()
                 )
                 .map(event -> EventResponse.builder()

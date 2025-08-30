@@ -1,4 +1,4 @@
-package com.example.VolunteerHub.Utils;
+package com.example.VolunteerHub.utils;
 
 import java.text.Normalizer;
 

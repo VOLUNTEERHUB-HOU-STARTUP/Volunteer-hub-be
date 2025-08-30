@@ -37,6 +37,16 @@ public class EventController {
                 .build();
     }
 
+    @GetMapping("/volunteer")
+    ApiResponse<List<EventResponse>> getListEventWithVolunteerRole(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<List<EventResponse>>builder()
+                .result(eventService.getListEventWithVolunteerRole(page, size))
+                .build();
+    }
+
     @PostMapping("/change")
     ApiResponse<EventResponse> changePublished(@RequestBody EventChangePublishedRequest request) {
         return ApiResponse.<EventResponse>builder()

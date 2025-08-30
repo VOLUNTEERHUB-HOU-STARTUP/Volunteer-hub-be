@@ -1,16 +1,12 @@
 package com.example.VolunteerHub.entity;
 
-import com.example.VolunteerHub.Utils.SlugUtil;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.example.VolunteerHub.utils.SlugUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.cglib.core.Local;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

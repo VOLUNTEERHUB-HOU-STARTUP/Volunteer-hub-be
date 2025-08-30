@@ -26,8 +26,9 @@ public class EventVolunteers {
     @JoinColumn(name = "user_id")
     Users user;
 
-    @Column(name = "qr_code", unique = true, nullable = false)
-    String qrCode;
+    @Builder.Default
+    @Column(name = "qr_code", unique = true)
+    String qrCode = null;
 
     @Column(name = "is_checked_in")
     boolean isCheckedIn;

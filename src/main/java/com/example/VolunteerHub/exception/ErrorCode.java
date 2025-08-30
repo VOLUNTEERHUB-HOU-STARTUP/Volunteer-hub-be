@@ -25,6 +25,7 @@ public enum ErrorCode {
     // 2000 - 2099: Event
     EVENT_NOT_EXISTED(2000, "event not existed", HttpStatus.NOT_FOUND),
     EVENT_EXISTED(2001, "event existed", HttpStatus.BAD_REQUEST),
+    EVENT_NOT_PUBLISH(2002, "event do not public for everyone", HttpStatus.BAD_REQUEST),
 
     // 3000 - 3099: Friend Request & Friendship
     INVALID_FRIEND_REQUEST_SENT(3000, "invalid friend request sent", HttpStatus.BAD_REQUEST),
