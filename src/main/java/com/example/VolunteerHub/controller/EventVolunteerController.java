@@ -2,14 +2,15 @@ package com.example.VolunteerHub.controller;
 
 import com.example.VolunteerHub.dto.request.ApplyEventRequest;
 import com.example.VolunteerHub.dto.response.ApiResponse;
+import com.example.VolunteerHub.dto.response.EventVolunteerResponse;
 import com.example.VolunteerHub.service.EventVolunteerService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,5 +24,16 @@ public class EventVolunteerController {
         eventVolunteerService.applyEvent(request);
 
         return ApiResponse.<Void>builder().build();
+    }
+
+    @GetMapping("/get/{eventId}")
+    ApiResponse<List<EventVolunteerResponse>> getListEventVolunteer(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @PathVariable UUID eventId
+            ) {
+        return ApiResponse.<List<EventVolunteerResponse>>builder()
+                .result(eventVolunteerService.getListEventVolunteer(eventId, page, size))
+                .build();
     }
 }
