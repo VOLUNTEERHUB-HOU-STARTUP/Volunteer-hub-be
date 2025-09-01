@@ -18,4 +18,8 @@ public interface EventRepository extends JpaRepository<Events, UUID> {
             "when count(e) > 0 then true else false end from Events e " +
             "where e.title = :title")
     boolean isExistedByEventTitle(String title);
+
+    @Query("select exists (select 1 from Events e " +
+            "where e.id = :eventId and e.user.id = :userId)")
+    boolean isEventOwner(UUID userId, UUID eventId);
 }

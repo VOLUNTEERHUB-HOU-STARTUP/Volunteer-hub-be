@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.entity;
 
+import com.example.VolunteerHub.enums.VolunteerStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +26,10 @@ public class EventVolunteers {
     @ManyToOne
     @JoinColumn(name = "user_id")
     Users user;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    VolunteerStatusEnum status;
 
     @Builder.Default
     @Column(name = "qr_code", unique = true)

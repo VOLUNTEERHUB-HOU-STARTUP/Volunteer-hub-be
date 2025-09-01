@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.dto.response;
 
+import com.example.VolunteerHub.enums.VolunteerStatusEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,6 +19,7 @@ public class EventVolunteerResponse {
     String fullName;
     String avatarUrl;
     boolean isCheckedIn;
+    VolunteerStatusEnum status;
     LocalDateTime checkInTime;
     LocalDateTime createdAt;
 }

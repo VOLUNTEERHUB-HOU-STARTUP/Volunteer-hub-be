@@ -27,13 +27,8 @@ public enum ErrorCode {
     EVENT_EXISTED(2001, "event existed", HttpStatus.BAD_REQUEST),
     EVENT_NOT_PUBLISH(2002, "event do not public for everyone", HttpStatus.BAD_REQUEST),
 
-    // 3000 - 3099: Friend Request & Friendship
-    INVALID_FRIEND_REQUEST_SENT(3000, "invalid friend request sent", HttpStatus.BAD_REQUEST),
-    FRIEND_REQUEST_NOT_FOUND(3001, "friend request not found", HttpStatus.NOT_FOUND),
-    FRIEND_REQUEST_NOT_PENDING(3002, "friend request not pending", HttpStatus.BAD_REQUEST),
-    FRIENDSHIP_NOT_FOUND(3003, "friendship not found", HttpStatus.NOT_FOUND),
-    FRIENDSHIP_EXISTED(3004, "friendship already existed", HttpStatus.BAD_REQUEST),
-    INVALID_FRIEND_REQUEST_STATUS(3005, "invalid friend request status", HttpStatus.BAD_REQUEST),
+    // 3000 - 3099: Event volunteers
+    EVENT_VOLUNTEER_NOT_EXISTED(3000, "event volunteer not existed", HttpStatus.NOT_FOUND),
 
     // 4000 - 4099: Comment
     COMMENT_NOT_EXISTED(4000, "comment not existed", HttpStatus.NOT_FOUND),

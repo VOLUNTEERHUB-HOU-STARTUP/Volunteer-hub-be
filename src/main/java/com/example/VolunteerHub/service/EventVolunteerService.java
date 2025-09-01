@@ -6,6 +6,7 @@ import com.example.VolunteerHub.entity.EventVolunteers;
 import com.example.VolunteerHub.entity.Events;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.enums.RoleEnum;
+import com.example.VolunteerHub.enums.VolunteerStatusEnum;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
 import com.example.VolunteerHub.repository.EventRepository;
@@ -47,17 +48,17 @@ public class EventVolunteerService {
         if (!event.isPublished())
             throw new AppException(ErrorCode.EVENT_NOT_PUBLISH);
 
+        if (eventVolunteerRepository.checkExisted(user.getId(), event.getId()))
+            throw new AppException(ErrorCode.EVENT_EXISTED);
+
         EventVolunteers eventVolunteer = EventVolunteers.builder()
                 .user(user)
                 .event(event)
                 .createdAt(LocalDateTime.now())
                 .isCheckedIn(false)
                 .qrCode(null)
+                .status(event.isAutoAccept() ? VolunteerStatusEnum.ACCEPTED : VolunteerStatusEnum.PENDING)
                 .build();
-
-        if (eventVolunteerRepository.checkExisted(user.getId(), event.getId())) {
-            throw new AppException(ErrorCode.EVENT_EXISTED);
-        }
 
         eventVolunteerRepository.save(eventVolunteer);
     }
@@ -69,8 +70,10 @@ public class EventVolunteerService {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if (user.getRole().getRole() == RoleEnum.VOLUNTEER &&
-                !eventVolunteerRepository.checkExisted(user.getId(), eventId))
+        boolean isAdmin = user.getRole().getRole() == RoleEnum.ADMIN;
+        boolean isOwner = eventRepository.isEventOwner(user.getId(), eventId);
+
+        if (!isAdmin && !isOwner)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         Pageable pageable = PageRequest.of(page, size);
@@ -84,8 +87,32 @@ public class EventVolunteerService {
                 .fullName(ev.getUser().getProfile().getFullName())
                 .eventId(ev.getEvent().getId())
                 .isCheckedIn(ev.isCheckedIn())
+                .status(ev.getStatus())
                 .checkInTime(ev.getCheckInTime())
                 .createdAt(ev.getCreatedAt())
                 .build()).toList();
+    }
+
+    public void handlingVolunteerRequest(UUID eventId, UUID volunteerId, boolean accept) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        boolean isAdmin = user.getRole().getRole() == RoleEnum.ADMIN;
+        boolean isOwner = eventRepository.isEventOwner(user.getId(), eventId);
+
+        if (!isAdmin && !isOwner)
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        if (!eventVolunteerRepository.checkExisted(volunteerId, eventId))
+            throw new AppException(ErrorCode.EVENT_VOLUNTEER_NOT_EXISTED);
+
+        EventVolunteers ev = eventVolunteerRepository.findByEventIdAndVolunteerId(eventId, volunteerId);
+
+        ev.setStatus(accept ? VolunteerStatusEnum.ACCEPTED : VolunteerStatusEnum.REJECTED);
+
+        eventVolunteerRepository.save(ev);
     }
 }

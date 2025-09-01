@@ -55,6 +55,9 @@ public class Events {
     @Column(name = "is_published")
     boolean isPublished;
 
+    @Column(name = "auto_accept")
+    boolean autoAccept;
+
     @Column(name = "updated_at")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime updatedAt;
