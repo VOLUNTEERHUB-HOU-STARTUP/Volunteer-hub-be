@@ -33,16 +33,26 @@ public class Profiles {
     @Builder.Default
     String bio = null;
 
+    @Builder.Default
     @Column(name = "is_active")
-    boolean isActive;
+    boolean isActive = true;
 
     @Column(name = "updated_at")
-    @Builder.Default
-    LocalDateTime updatedAt = LocalDateTime.now();
+    LocalDateTime updatedAt;
 
     @Column(name = "created_at")
-    @Builder.Default
-    LocalDateTime createdAt = LocalDateTime.now(); // YYYY-MM-ddTHH:mm:ss
+    LocalDateTime createdAt; // YYYY-MM-ddTHH:mm:ss
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
 
     // users
     @OneToOne

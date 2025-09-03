@@ -28,12 +28,8 @@ public class Users {
     @Column(name = "password")
     String password;
 
-//    boolean email_verified;
-//    String email_verification_token;
-//    LocalDateTime email_verification_expires;
-
     // profiles
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Profiles profile;
 
     // roles
@@ -47,5 +43,9 @@ public class Users {
 
     // event volunteer
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<EventVolunteers> eventVolunteers;
+    List<EventVolunteers> eventVolunteers = new ArrayList<>();
+
+    //authProvider
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<UserAuthProvider> userAuthProviders = new ArrayList<>();
 }

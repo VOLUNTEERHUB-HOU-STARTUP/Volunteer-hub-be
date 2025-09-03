@@ -30,8 +30,8 @@ public enum ErrorCode {
     // 3000 - 3099: Event volunteers
     EVENT_VOLUNTEER_NOT_EXISTED(3000, "event volunteer not existed", HttpStatus.NOT_FOUND),
 
-    // 4000 - 4099: Comment
-    COMMENT_NOT_EXISTED(4000, "comment not existed", HttpStatus.NOT_FOUND),
+    // 4000 - 4099: ROLE
+    ROLE_NOT_FOUND(4000, "role not found", HttpStatus.NOT_FOUND),
 
     // 5000 - 5099: Notification
     NOTIFICATION_NOT_EXISTED(5000, "notification not existed", HttpStatus.NOT_FOUND),

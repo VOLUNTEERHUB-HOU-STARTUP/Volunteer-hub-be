@@ -1,6 +1,7 @@
 package com.example.VolunteerHub.configuration;
 
 import com.example.VolunteerHub.constant.AllowedOrigins;
+import com.example.VolunteerHub.service.CustomOAuth2UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -32,21 +33,25 @@ import static com.example.VolunteerHub.constant.AllowedOrigins.ORIGINS;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SecurityConfig {
     CustomJwtDecoder customJwtDecoder;
+    CustomOAuth2UserService customOAuth2UserService;
 
     String[] PUBLIC_ENDPOINT = {
             "/api/users/create",
             "/auth/token",
             "/auth/refresh",
-            "/auth/introspect"
+            "/auth/introspect",
+            "/login/**",
+            "/oauth2/**"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults());
+        http.csrf(AbstractHttpConfigurer::disable);
+
         http.authorizeHttpRequests(request ->
                 request
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINT).permitAll()
                         .anyRequest().authenticated()
         );
 
@@ -55,7 +60,22 @@ public class SecurityConfig {
                         jwtConfigurer.decoder(customJwtDecoder)
                 ).authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
-        http.csrf(AbstractHttpConfigurer::disable);
+
+        http.oauth2Login(oauth2 ->
+                oauth2
+                        .userInfoEndpoint(userInfoEndpointConfig ->
+                                userInfoEndpointConfig
+                                        .userService(customOAuth2UserService)
+                        )
+                        .defaultSuccessUrl("/user", true)); // đăg nhập xong chuyển hướng
+
+        http.logout(logout ->
+                logout
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+        );
 
         return http.build();
     }

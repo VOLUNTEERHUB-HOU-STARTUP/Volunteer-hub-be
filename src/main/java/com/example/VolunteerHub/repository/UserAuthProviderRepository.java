@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
-//@Repository
+@Repository
 public interface UserAuthProviderRepository extends JpaRepository<UserAuthProvider, UUID> {
-//    Optional<UserAuthProvider> findByProviderAndProviderId(AuthProviderEnum provider, int providerId);
+    Optional<UserAuthProvider> findByProviderAndProviderId(AuthProviderEnum provider, String providerId);
 }

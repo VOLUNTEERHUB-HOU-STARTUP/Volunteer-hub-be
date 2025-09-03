@@ -41,12 +41,15 @@ public class UserService {
     @Transactional
     public UserCreationResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByEmail(request.getEmail()))
-            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+            throw new AppException(ErrorCode.USER_EXISTED);
 
         if (request.getRole() == RoleEnum.ADMIN)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         Roles role = roleRepository.findByRole(request.getRole());
+
+        if (role == null)
+            throw new AppException(ErrorCode.ROLE_NOT_FOUND);
 
         Users user = Users.builder()
                 .email(request.getEmail())
@@ -54,14 +57,14 @@ public class UserService {
                 .build();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        userRepository.save(user);
-
         Profiles profile = Profiles.builder()
                 .user(user)
                 .fullName(request.getFullName())
                 .build();
 
-        profileRepository.save(profile);
+        user.setProfile(profile);
+
+        userRepository.save(user);
 
         return UserCreationResponse.builder()
                 .success(true)

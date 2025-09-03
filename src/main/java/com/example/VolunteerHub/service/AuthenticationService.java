@@ -11,6 +11,7 @@ import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
 import com.example.VolunteerHub.repository.InvalidTokenRepository;
+import com.example.VolunteerHub.repository.UserAuthProviderRepository;
 import com.example.VolunteerHub.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -40,15 +41,15 @@ public class AuthenticationService {
     UserRepository userRepository;
 
     @NonFinal
-    @Value("${jwt.signerKey}")
+    @Value("${app.jwt.signerKey}")
     protected String SIGNER_KEY;
 
     @NonFinal
-    @Value("${jwt.valid-duration}")
+    @Value("${app.jwt.valid-duration}")
     protected long VALID_DURATION;
 
     @NonFinal
-    @Value("${jwt.refreshable-duration}")
+    @Value("${app.jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
     public IntrospectResponse introspect(IntrospectRequest request) {
@@ -117,11 +118,8 @@ public class AuthenticationService {
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(users.getEmail())
                 .issuer("ducminh")
-                .issueTime(new Date())
-                .expirationTime(new Date(Instant.now()
-                        .plus(VALID_DURATION, ChronoUnit.SECONDS)
-                        .toEpochMilli())
-                )
+                .issueTime(Date.from(Instant.now()))
+                .expirationTime(Date.from(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS)))
                 .jwtID(UUID.randomUUID().toString())
                 .build();
 

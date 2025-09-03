@@ -12,15 +12,38 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+
+            scope: openid, profile, email
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
 server:
   port: 8080
   address: 0.0.0.0
   servlet:
     context-path: /
-jwt:
-  signerKey: "V6MwVJfHlK1qrOBkjgcc5r4MYr4cLU74mnoL+kz5WEhPAIVQkw16Yo269Tkma26s"
-  valid-duration: 36000 # in seconds
-  refreshable-duration: 36000
+
+app:
+  jwt:
+    signerKey: "V6MwVJfHlK1qrOBkjgcc5r4MYr4cLU74mnoL+kz5WEhPAIVQkw16Yo269Tkma26s"
+    valid-duration: 36000 # in seconds
+    refreshable-duration: 36000
 cloudinary:
   cloud-name: "dcvrdyzo1"
   api-key: 589483672795972

@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public enum AuthProviderEnum {
-    EMAIL, FACEBOOK, GOOGLE
+    LOCAL, FACEBOOK, GOOGLE
 }
