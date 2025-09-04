@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -23,6 +24,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static com.example.VolunteerHub.constant.AllowedOrigins.ORIGINS;
 
@@ -55,11 +58,12 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
         );
 
-        http.oauth2ResourceServer(oauth ->
-                oauth.jwt(jwtConfigurer ->
-                        jwtConfigurer.decoder(customJwtDecoder)
-                ).authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-        );
+        http.oauth2ResourceServer(oauth2 ->
+                oauth2.jwt(jwtConfigurer ->
+                                jwtConfigurer
+                                        .decoder(customJwtDecoder)
+                                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 
         http.oauth2Login(oauth2 ->
                 oauth2

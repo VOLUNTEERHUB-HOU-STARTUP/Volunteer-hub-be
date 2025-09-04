@@ -9,9 +9,11 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,13 +29,43 @@ public class EventController {
                 .build();
     }
 
-    @GetMapping("")
+    @GetMapping("/admin/get-all")
     ApiResponse<List<EventResponse>> getListEventWithPaging(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponse.<List<EventResponse>>builder()
                 .result(eventService.getListEventWithPaging(page, size))
+                .build();
+    }
+
+    @GetMapping("/admin/get-unpublished")
+    ApiResponse<List<EventResponse>> getListEventNotPublishedWithPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<List<EventResponse>>builder()
+                .result(eventService.getListEventNotPublishedWithPaging(page, size))
+                .build();
+    }
+
+    @GetMapping("/admin/get-expired")
+    ApiResponse<List<EventResponse>> getListEventHasExpired(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<List<EventResponse>>builder()
+                .result(eventService.getListEventExpired(page, size))
+                .build();
+    }
+
+    @GetMapping("/admin/get-published")
+    ApiResponse<List<EventResponse>> getListEventPublishedWithPaging(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<List<EventResponse>>builder()
+                .result(eventService.getListEventPublishedWithPaging(page, size))
                 .build();
     }
 
@@ -47,10 +79,34 @@ public class EventController {
                 .build();
     }
 
+    @GetMapping("/volunteer/get-expired")
+    ApiResponse<List<EventResponse>> getListEventHasExpiredWithVolunteerRole(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.<List<EventResponse>>builder()
+                .result(eventService.getListEventHasExpiredWithVolunteerRole(page, size))
+                .build();
+    }
+
+    @GetMapping("/{eventId}")
+    ApiResponse<EventResponse> getEventDetail(@PathVariable UUID eventId) {
+        return ApiResponse.<EventResponse>builder()
+                .result(eventService.getEventDetail(eventId))
+                .build();
+    }
+
     @PostMapping("/change")
     ApiResponse<EventResponse> changePublished(@RequestBody EventChangePublishedRequest request) {
         return ApiResponse.<EventResponse>builder()
                 .result(eventService.changePublished(request))
                 .build();
+    }
+
+    @DeleteMapping("/delete/{eventId}")
+    ApiResponse<Void> deleteEvent(@PathVariable UUID eventId) {
+        eventService.deleteEvent(eventId);
+
+        return ApiResponse.<Void>builder().build();
     }
 }

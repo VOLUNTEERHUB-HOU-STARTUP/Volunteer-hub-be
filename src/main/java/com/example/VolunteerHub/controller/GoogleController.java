@@ -12,7 +12,7 @@ import java.security.Principal;
 public class GoogleController {
     @GetMapping("/user")
     ApiResponse<?> getUser(@AuthenticationPrincipal OidcUser principal) {
-
+        
         return ApiResponse.builder()
                 .result(principal.getAttributes())
                 .build();

@@ -26,11 +26,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 @Service
@@ -112,15 +114,16 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(Users users) {
+    private String generateToken(Users user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(users.getEmail())
-                .issuer("ducminh")
+                .subject(user.getEmail())
+                .issuer("ducminh.dev")
                 .issueTime(Date.from(Instant.now()))
                 .expirationTime(Date.from(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS)))
                 .jwtID(UUID.randomUUID().toString())
+                .claim("scope", buildScope(user))
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -135,6 +138,19 @@ public class AuthenticationService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    private String buildScope(Users user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+
+        if (!CollectionUtils.isEmpty(user.getRole().getUserRoles())) {
+            String role = user.getRole().getRole().name();
+
+            stringJoiner.add("ROLE_" + role.toUpperCase());
+        }
+
+        return stringJoiner.toString();
+    }
+
 
     public void logout(LogoutRequest request) {
         try {
