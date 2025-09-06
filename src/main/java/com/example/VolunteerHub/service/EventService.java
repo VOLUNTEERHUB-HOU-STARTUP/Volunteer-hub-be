@@ -11,6 +11,7 @@ import com.example.VolunteerHub.enums.MediaTypeEnum;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
+import com.example.VolunteerHub.mapper.EventMapper;
 import com.example.VolunteerHub.repository.EventRepository;
 import com.example.VolunteerHub.repository.UserRepository;
 import com.example.VolunteerHub.utils.AuthUtil;
@@ -101,30 +102,7 @@ public class EventService {
         Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
 
         return eventList.stream()
-                .map(event -> EventResponse.builder()
-                        .id(event.getId())
-                        .userId(event.getUser().getId())
-                        .fullName(event.getUser().getProfile().getFullName())
-                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .slug(event.getSlug())
-                        .salary(event.getSalary())
-                        .location(event.getLocation())
-                        .isPublished(event.isPublished())
-                        .maxVolunteer(event.getMaxVolunteer())
-                        .eventMedia(event.getEventMedia().stream().map(media ->
-                                EventMediaResponse.builder()
-                                        .id(media.getId())
-                                        .mediaType(media.getMediaType())
-                                        .mediaUrl(media.getMediaUrl())
-                                        .build()).toList())
-                        .startAt(event.getStartAt())
-                        .endAt(event.getEndAt())
-                        .deadline(event.getDeadline())
-                        .createdAt(event.getCreatedAt())
-                        .updatedAt(event.getUpdatedAt())
-                        .build())
+                .map(EventMapper::mapToResponse)
                 .toList();
     }
 
@@ -136,30 +114,19 @@ public class EventService {
 
         return eventList.stream()
                 .filter(event ->!event.isPublished())
-                .map(event -> EventResponse.builder()
-                        .id(event.getId())
-                        .userId(event.getUser().getId())
-                        .fullName(event.getUser().getProfile().getFullName())
-                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .slug(event.getSlug())
-                        .salary(event.getSalary())
-                        .location(event.getLocation())
-                        .isPublished(event.isPublished())
-                        .maxVolunteer(event.getMaxVolunteer())
-                        .eventMedia(event.getEventMedia().stream().map(media ->
-                                EventMediaResponse.builder()
-                                        .id(media.getId())
-                                        .mediaType(media.getMediaType())
-                                        .mediaUrl(media.getMediaUrl())
-                                        .build()).toList())
-                        .startAt(event.getStartAt())
-                        .endAt(event.getEndAt())
-                        .deadline(event.getDeadline())
-                        .createdAt(event.getCreatedAt())
-                        .updatedAt(event.getUpdatedAt())
-                        .build())
+                .map(EventMapper::mapToResponse)
+                .toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<EventResponse> getListEventWaitingWithPaging(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
+
+        return eventList.stream()
+                .filter(event -> !event.isPublished() && LocalDateTime.now().isAfter(event.getEndAt()))
+                .map(EventMapper::mapToResponse)
                 .toList();
     }
 
@@ -171,31 +138,7 @@ public class EventService {
 
         return eventList.stream()
                 .filter(event -> LocalDateTime.now().isAfter(event.getEndAt()))
-                .map(event -> EventResponse.builder()
-                            .id(event.getId())
-                            .userId(event.getUser().getId())
-                            .fullName(event.getUser().getProfile().getFullName())
-                            .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                            .title(event.getTitle())
-                            .description(event.getDescription())
-                            .slug(event.getSlug())
-                            .salary(event.getSalary())
-                            .location(event.getLocation())
-                            .isPublished(event.isPublished())
-                            .maxVolunteer(event.getMaxVolunteer())
-                            .eventMedia(event.getEventMedia().stream().map(media ->
-                                    EventMediaResponse.builder()
-                                            .id(media.getId())
-                                            .mediaType(media.getMediaType())
-                                            .mediaUrl(media.getMediaUrl())
-                                            .build()).toList())
-                            .startAt(event.getStartAt())
-                            .endAt(event.getEndAt())
-                            .deadline(event.getDeadline())
-                            .createdAt(event.getCreatedAt())
-                            .updatedAt(event.getUpdatedAt())
-                            .build()
-                ).toList();
+                .map(EventMapper::mapToResponse).toList();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -205,31 +148,11 @@ public class EventService {
         Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
 
         return eventList.stream()
-                .filter(event -> LocalDateTime.now().isBefore(event.getEndAt()) && event.isPublished())
-                .map(event -> EventResponse.builder()
-                        .id(event.getId())
-                        .userId(event.getUser().getId())
-                        .fullName(event.getUser().getProfile().getFullName())
-                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .slug(event.getSlug())
-                        .salary(event.getSalary())
-                        .location(event.getLocation())
-                        .isPublished(event.isPublished())
-                        .maxVolunteer(event.getMaxVolunteer())
-                        .eventMedia(event.getEventMedia().stream().map(media ->
-                                EventMediaResponse.builder()
-                                        .id(media.getId())
-                                        .mediaType(media.getMediaType())
-                                        .mediaUrl(media.getMediaUrl())
-                                        .build()).toList())
-                        .startAt(event.getStartAt())
-                        .endAt(event.getEndAt())
-                        .deadline(event.getDeadline())
-                        .createdAt(event.getCreatedAt())
-                        .updatedAt(event.getUpdatedAt())
-                        .build())
+                .filter(event ->
+                        LocalDateTime.now().isBefore(event.getEndAt()) &&
+                        event.isPublished()
+                )
+                .map(EventMapper::mapToResponse)
                 .toList();
     }
 
@@ -242,34 +165,10 @@ public class EventService {
 
         return eventList.stream()
                 .filter(event ->
-                        user.getRole().getRole() == RoleEnum.VOLUNTEER &&
                         event.isPublished() &&
                         LocalDateTime.now().isBefore(event.getEndAt())
                 )
-                .map(event -> EventResponse.builder()
-                        .id(event.getId())
-                        .userId(event.getUser().getId())
-                        .fullName(event.getUser().getProfile().getFullName())
-                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .slug(event.getSlug())
-                        .salary(event.getSalary())
-                        .location(event.getLocation())
-                        .isPublished(event.isPublished())
-                        .maxVolunteer(event.getMaxVolunteer())
-                        .eventMedia(event.getEventMedia().stream().map(media ->
-                                EventMediaResponse.builder()
-                                        .id(media.getId())
-                                        .mediaType(media.getMediaType())
-                                        .mediaUrl(media.getMediaUrl())
-                                        .build()).toList())
-                        .startAt(event.getStartAt())
-                        .endAt(event.getEndAt())
-                        .deadline(event.getDeadline())
-                        .createdAt(event.getCreatedAt())
-                        .updatedAt(event.getUpdatedAt())
-                        .build())
+                .map(EventMapper::mapToResponse)
                 .toList();
     }
 
@@ -282,34 +181,10 @@ public class EventService {
 
         return eventList.stream()
                 .filter(event ->
-                        user.getRole().getRole() == RoleEnum.VOLUNTEER &&
                                 event.isPublished() &&
                                 LocalDateTime.now().isAfter(event.getEndAt())
                 )
-                .map(event -> EventResponse.builder()
-                        .id(event.getId())
-                        .userId(event.getUser().getId())
-                        .fullName(event.getUser().getProfile().getFullName())
-                        .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .slug(event.getSlug())
-                        .salary(event.getSalary())
-                        .location(event.getLocation())
-                        .isPublished(event.isPublished())
-                        .maxVolunteer(event.getMaxVolunteer())
-                        .eventMedia(event.getEventMedia().stream().map(media ->
-                                EventMediaResponse.builder()
-                                        .id(media.getId())
-                                        .mediaType(media.getMediaType())
-                                        .mediaUrl(media.getMediaUrl())
-                                        .build()).toList())
-                        .startAt(event.getStartAt())
-                        .endAt(event.getEndAt())
-                        .deadline(event.getDeadline())
-                        .createdAt(event.getCreatedAt())
-                        .updatedAt(event.getUpdatedAt())
-                        .build())
+                .map(EventMapper::mapToResponse)
                 .toList();
     }
 
@@ -324,30 +199,7 @@ public class EventService {
                         !eventRepository.isEventOwner(user.getId(), event.getId())))
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
-        return EventResponse.builder()
-                    .id(event.getId())
-                    .userId(event.getUser().getId())
-                    .fullName(event.getUser().getProfile().getFullName())
-                    .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                    .title(event.getTitle())
-                    .description(event.getDescription())
-                    .slug(event.getSlug())
-                    .salary(event.getSalary())
-                    .location(event.getLocation())
-                    .isPublished(event.isPublished())
-                    .maxVolunteer(event.getMaxVolunteer())
-                    .eventMedia(event.getEventMedia().stream().map(media ->
-                            EventMediaResponse.builder()
-                                    .id(media.getId())
-                                    .mediaType(media.getMediaType())
-                                    .mediaUrl(media.getMediaUrl())
-                                    .build()).toList())
-                    .startAt(event.getStartAt())
-                    .endAt(event.getEndAt())
-                    .deadline(event.getDeadline())
-                    .createdAt(event.getCreatedAt())
-                    .updatedAt(event.getUpdatedAt())
-                    .build();
+        return EventMapper.mapToResponse(event);
     }
 
     public EventResponse changePublished(EventChangePublishedRequest request) {
@@ -365,30 +217,7 @@ public class EventService {
 
         event = eventRepository.save(event);
 
-        return EventResponse.builder()
-                .id(event.getId())
-                .userId(event.getUser().getId())
-                .fullName(event.getUser().getProfile().getFullName())
-                .avatarUrl(event.getUser().getProfile().getAvatarUrl())
-                .title(event.getTitle())
-                .description(event.getDescription())
-                .slug(event.getSlug())
-                .salary(event.getSalary())
-                .location(event.getLocation())
-                .isPublished(event.isPublished())
-                .maxVolunteer(event.getMaxVolunteer())
-                .eventMedia(event.getEventMedia().stream().map(media ->
-                        EventMediaResponse.builder()
-                                .id(media.getId())
-                                .mediaType(media.getMediaType())
-                                .mediaUrl(media.getMediaUrl())
-                                .build()).toList())
-                .startAt(event.getStartAt())
-                .endAt(event.getEndAt())
-                .deadline(event.getDeadline())
-                .updatedAt(event.getUpdatedAt())
-                .createdAt(event.getCreatedAt())
-                .build();
+        return EventMapper.mapToResponse(event);
     }
 
     public void deleteEvent(UUID eventId) {
