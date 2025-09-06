@@ -6,6 +6,7 @@ import com.example.VolunteerHub.entity.Profiles;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
+import com.example.VolunteerHub.mapper.ProfileMapper;
 import com.example.VolunteerHub.repository.ProfileRepository;
 import com.example.VolunteerHub.repository.UserRepository;
 import lombok.AccessLevel;
@@ -66,14 +67,7 @@ public class ProfileService {
 
         Profiles profile = profileRepository.findByUserId(user.getId());
 
-        return ProfileResponse.builder()
-                .userId(profile.getUserId())
-                .avatarUrl(profile.getAvatarUrl())
-                .fullName(profile.getFullName())
-                .isActive(profile.isActive())
-                .bio(profile.getBio())
-                .createdAt(profile.getCreatedAt())
-                .updatedAt(profile.getUpdatedAt())
-                .build();
+        return ProfileMapper
+                .toProfileResponse(profile, user.getVolunteerProfile(), user.getOrganizerProfile());
     }
 }

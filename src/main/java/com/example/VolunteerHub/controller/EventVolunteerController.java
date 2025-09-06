@@ -38,6 +38,13 @@ public class EventVolunteerController {
                 .build();
     }
 
+    @GetMapping("/get/{eventId}/applications")
+    ApiResponse<List<EventVolunteerResponse>> getListEventVolunteerFilterWith() {
+        return ApiResponse.<List<EventVolunteerResponse>>builder()
+
+                .build();
+    }
+
     @PutMapping("/{eventId}/handling/{volunteerId}")
     ApiResponse<Void> handlingVolunteerRequest(
             @PathVariable(name = "eventId") UUID eventId,

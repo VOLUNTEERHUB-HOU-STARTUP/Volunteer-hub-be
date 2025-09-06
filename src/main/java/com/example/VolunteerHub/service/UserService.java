@@ -5,28 +5,28 @@ import com.example.VolunteerHub.dto.request.UserCreationRequest;
 import com.example.VolunteerHub.dto.request.UserDeleteAccountRequest;
 import com.example.VolunteerHub.dto.response.UserCreationResponse;
 import com.example.VolunteerHub.dto.response.UserResponse;
-import com.example.VolunteerHub.entity.Profiles;
-import com.example.VolunteerHub.entity.Roles;
-import com.example.VolunteerHub.entity.Users;
+import com.example.VolunteerHub.entity.*;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
+import com.example.VolunteerHub.mapper.UserMapper;
 import com.example.VolunteerHub.repository.ProfileRepository;
 import com.example.VolunteerHub.repository.RoleRepository;
 import com.example.VolunteerHub.repository.UserRepository;
+import com.example.VolunteerHub.utils.AuthUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.example.VolunteerHub.enums.RoleEnum.VOLUNTEER;
 
 @Slf4j
 @Service
@@ -37,6 +37,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
     ProfileRepository profileRepository;
+    AuthUtil authUtil;
 
     @Transactional
     public UserCreationResponse createUser(UserCreationRequest request) {
@@ -62,6 +63,26 @@ public class UserService {
                 .fullName(request.getFullName())
                 .build();
 
+        switch (user.getRole().getRole()) {
+            case VOLUNTEER -> {
+                VolunteerProfiles volunteerProfile = VolunteerProfiles.builder()
+                        .user(user)
+                        .rating(0)
+                        .totalEventJoined(0)
+                        .totalEventRegistered(0)
+                        .build();
+                user.setVolunteerProfile(volunteerProfile);
+            }
+            case ORGANIZER -> {
+                OrganizerProfiles organizerProfile = OrganizerProfiles.builder()
+                        .user(user)
+                        .totalEventOrganized(0)
+                        .totalParticipants(0)
+                        .build();
+                user.setOrganizerProfile(organizerProfile);
+            }
+        }
+
         user.setProfile(profile);
 
         userRepository.save(user);
@@ -71,58 +92,20 @@ public class UserService {
                 .build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getListUser() {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
-
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        var role = user.getRole().getRole();
-        if (role != RoleEnum.ADMIN)
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-
         List<Users> usersList = userRepository.findAll();
 
-        return usersList.stream().map(u -> UserResponse.builder()
-                .id(u.getId())
-                .email(u.getEmail())
-                .fullName(u.getProfile().getFullName())
-                .isActive(u.getProfile().isActive())
-                .createdAt(u.getProfile().getCreatedAt())
-                .build()).toList();
+        return usersList.stream().map(UserMapper::toUserResponse).toList();
     }
 
     public UserResponse getMyInfo() {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
+        Users user = authUtil.getCurrentUser();
 
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        Roles role = roleRepository.findByRole(user.getRole().getRole());
-
-        return UserResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getProfile().getFullName())
-                .role(role.getRole())
-                .isActive(user.getProfile().isActive())
-                .createdAt(user.getProfile().getCreatedAt())
-                .build();
+        return UserMapper.toUserResponse(user);
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     public void changeUserRole(UserChangeRoleRequest request) {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
-
-        Users admin = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        var adminRole = admin.getRole().getRole();
-        if (adminRole != RoleEnum.ADMIN)
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-
         Users user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -130,6 +113,26 @@ public class UserService {
 
         if (role.getRole() == RoleEnum.ADMIN)
             throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        switch (role.getRole()) {
+            case ORGANIZER -> {
+                user.setVolunteerProfile(null);
+                user.setOrganizerProfile(OrganizerProfiles.builder()
+                                .user(user)
+                                .totalParticipants(0)
+                                .totalEventOrganized(0)
+                        .build());
+            }
+            case VOLUNTEER -> {
+                user.setOrganizerProfile(null);
+                user.setVolunteerProfile(VolunteerProfiles.builder()
+                                .user(user)
+                                .totalEventJoined(0)
+                                .totalEventRegistered(0)
+                                .rating(0)
+                        .build());
+            }
+        }
 
         user.setRole(role);
         userRepository.save(user);

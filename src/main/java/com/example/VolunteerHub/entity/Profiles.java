@@ -22,8 +22,7 @@ public class Profiles {
     String fullName;
 
     @Column(name = "last_updated_name")
-    @Builder.Default
-    LocalDateTime lastUpdatedName = LocalDateTime.now();
+    LocalDateTime lastUpdatedName;
 
     @Column(name = "avatar_url")
     @Builder.Default
@@ -50,6 +49,7 @@ public class Profiles {
 
     @PrePersist
     void onCreate() {
+        lastUpdatedName = LocalDateTime.now();
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

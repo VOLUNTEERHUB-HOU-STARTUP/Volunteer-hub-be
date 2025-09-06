@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.dto.response;
 
+import com.example.VolunteerHub.entity.VolunteerProfiles;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import lombok.*;
@@ -19,6 +20,8 @@ public class ProfileResponse {
     String avatarUrl;
     String bio;
     boolean isActive;
+    VolunteerProfileResponse volunteerProfileResponse;
+    OrganizerProfileResponse organizerProfileResponse;
     LocalDateTime updatedAt;
     LocalDateTime createdAt; // YYYY-MM-ddTHH:mm:ss
 }

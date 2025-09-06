@@ -48,4 +48,12 @@ public class Users {
     //authProvider
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     List<UserAuthProvider> userAuthProviders = new ArrayList<>();
+
+    // if volunteer
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    VolunteerProfiles volunteerProfile;
+
+    // if organizer
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    OrganizerProfiles organizerProfile;
 }
