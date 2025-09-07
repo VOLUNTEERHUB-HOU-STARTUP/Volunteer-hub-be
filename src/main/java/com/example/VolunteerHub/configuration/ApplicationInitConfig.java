@@ -51,6 +51,9 @@ public class ApplicationInitConfig {
                         .createdAt(LocalDateTime.now())
                         .build();
 
+                user.setVolunteerProfile(null);
+                user.setOrganizerProfile(null);
+
                 user.setProfile(profile);
                 userRepository.save(user);
 

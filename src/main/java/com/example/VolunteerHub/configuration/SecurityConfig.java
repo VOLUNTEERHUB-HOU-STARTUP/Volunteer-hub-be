@@ -54,7 +54,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(request ->
                 request
-                        .requestMatchers(PUBLIC_ENDPOINT).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
                         .anyRequest().authenticated()
         );
 
@@ -62,8 +62,8 @@ public class SecurityConfig {
                 oauth2.jwt(jwtConfigurer ->
                                 jwtConfigurer
                                         .decoder(customJwtDecoder)
-                                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
+                                        .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                ).authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 
         http.oauth2Login(oauth2 ->
                 oauth2

@@ -4,6 +4,7 @@ import com.example.VolunteerHub.dto.request.UserChangeRoleRequest;
 import com.example.VolunteerHub.dto.request.UserCreationRequest;
 import com.example.VolunteerHub.dto.request.UserDeleteAccountRequest;
 import com.example.VolunteerHub.dto.response.UserCreationResponse;
+import com.example.VolunteerHub.dto.response.UserProfileResponse;
 import com.example.VolunteerHub.dto.response.UserResponse;
 import com.example.VolunteerHub.entity.*;
 import com.example.VolunteerHub.enums.RoleEnum;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.VolunteerHub.enums.RoleEnum.VOLUNTEER;
 
@@ -36,7 +38,6 @@ public class UserService {
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
-    ProfileRepository profileRepository;
     AuthUtil authUtil;
 
     @Transactional
@@ -100,13 +101,23 @@ public class UserService {
     }
 
     public UserResponse getMyInfo() {
-        Users user = authUtil.getCurrentUser();
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return UserMapper.toUserResponse(user);
     }
+
+    public Users getUserById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     public void changeUserRole(UserChangeRoleRequest request) {
-        Users user = userRepository.findByEmail(request.getEmail())
+        Users user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Roles role = roleRepository.findByRole(request.getNewRole());

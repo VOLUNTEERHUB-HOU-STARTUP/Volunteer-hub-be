@@ -8,6 +8,7 @@ import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import java.text.ParseException;
 import java.time.Duration;
 import java.util.Objects;
 
+@Slf4j
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
     @Value("${app.jwt.signerKey}")
@@ -55,7 +57,7 @@ public class CustomJwtDecoder implements JwtDecoder {
                 throw new AppException(ErrorCode.TOKEN_INVALID);
             }
         } catch (RuntimeException e) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+            throw new AppException(ErrorCode.TOKEN_INVALID);
         }
 
         if (Objects.isNull(nimbusJwtDecoder)) {
@@ -65,6 +67,7 @@ public class CustomJwtDecoder implements JwtDecoder {
                     .macAlgorithm(MacAlgorithm.HS512)
                     .build();
         }
+
 
         return nimbusJwtDecoder.decode(token);
     }

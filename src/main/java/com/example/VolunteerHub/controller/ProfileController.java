@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/profiles")
 @RequiredArgsConstructor
@@ -28,6 +30,13 @@ public class ProfileController {
     ApiResponse<ProfileResponse> getMyProfile() {
         return ApiResponse.<ProfileResponse>builder()
                 .result(profileService.getMyInfo())
+                .build();
+    }
+
+    @GetMapping("/{userId}")
+    ApiResponse<ProfileResponse> getProfileWithUserId(@PathVariable UUID userId) {
+        return ApiResponse.<ProfileResponse>builder()
+                .result(profileService.getProfileWithUserId(userId))
                 .build();
     }
 }

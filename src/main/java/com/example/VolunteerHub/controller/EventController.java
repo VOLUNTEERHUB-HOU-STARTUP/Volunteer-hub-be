@@ -69,23 +69,23 @@ public class EventController {
                 .build();
     }
 
-    @GetMapping("/volunteer")
-    ApiResponse<List<EventResponse>> getListEventWithVolunteerRole(
+    @GetMapping("/user")
+    ApiResponse<List<EventResponse>> getListEventWithoutAdminRole(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponse.<List<EventResponse>>builder()
-                .result(eventService.getListEventWithVolunteerRole(page, size))
+                .result(eventService.getListEventWithoutAdminRole(page, size))
                 .build();
     }
 
-    @GetMapping("/volunteer/get-expired")
-    ApiResponse<List<EventResponse>> getListEventHasExpiredWithVolunteerRole(
+    @GetMapping("/user/get-expired")
+    ApiResponse<List<EventResponse>> getListEventHasExpiredWithoutAdminRole(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ApiResponse.<List<EventResponse>>builder()
-                .result(eventService.getListEventHasExpiredWithVolunteerRole(page, size))
+                .result(eventService.getListEventHasExpiredWithoutAdminRole(page, size))
                 .build();
     }
 

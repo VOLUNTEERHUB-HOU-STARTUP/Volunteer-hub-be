@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.mapper;
 
+import com.example.VolunteerHub.dto.response.UserProfileResponse;
 import com.example.VolunteerHub.dto.response.UserResponse;
 import com.example.VolunteerHub.entity.Users;
 import org.mapstruct.Mapper;

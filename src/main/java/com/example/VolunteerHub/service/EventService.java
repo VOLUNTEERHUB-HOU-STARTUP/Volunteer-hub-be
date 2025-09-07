@@ -42,10 +42,14 @@ import java.util.UUID;
 public class EventService {
     EventRepository eventRepository;
     CloudinaryService cloudinaryService;
-    AuthUtil authUtil;
+    UserRepository userRepository;
 
     public void createEvent(EventCreationRequest request) {
-        Users user = authUtil.getCurrentUser();
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var role = user.getRole().getRole();
         if (role == RoleEnum.VOLUNTEER)
@@ -156,8 +160,12 @@ public class EventService {
                 .toList();
     }
 
-    public List<EventResponse> getListEventWithVolunteerRole(int page, int size) {
-        Users user = authUtil.getCurrentUser();
+    public List<EventResponse> getListEventWithoutAdminRole(int page, int size) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Pageable pageable = PageRequest.of(page, size);
 
@@ -172,8 +180,7 @@ public class EventService {
                 .toList();
     }
 
-    public List<EventResponse> getListEventHasExpiredWithVolunteerRole(int page, int size) {
-        Users user = authUtil.getCurrentUser();
+    public List<EventResponse> getListEventHasExpiredWithoutAdminRole(int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
@@ -189,7 +196,11 @@ public class EventService {
     }
 
     public EventResponse getEventDetail(UUID eventId) {
-        Users user = authUtil.getCurrentUser();
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Events event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
@@ -203,7 +214,11 @@ public class EventService {
     }
 
     public EventResponse changePublished(EventChangePublishedRequest request) {
-        Users user = authUtil.getCurrentUser();
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var role = user.getRole().getRole();
 
@@ -221,7 +236,11 @@ public class EventService {
     }
 
     public void deleteEvent(UUID eventId) {
-        Users user = authUtil.getCurrentUser();
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var role = user.getRole().getRole();
 

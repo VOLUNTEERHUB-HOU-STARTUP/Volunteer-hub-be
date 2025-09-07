@@ -4,12 +4,14 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserProfileResponse {
-    UserResponse userResponse;
-    VolunteerProfileResponse volunteerProfileResponse;
-    OrganizerProfileResponse organizerProfileResponse;
+public class NotificationResponse {
+    String title;
+    String body;
+    String time;
+    boolean read;
+    String link;
 }

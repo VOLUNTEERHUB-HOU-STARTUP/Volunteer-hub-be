@@ -2,13 +2,20 @@ package com.example.VolunteerHub.service;
 
 import com.example.VolunteerHub.dto.request.ProfileUpdateRequest;
 import com.example.VolunteerHub.dto.response.ProfileResponse;
+import com.example.VolunteerHub.dto.response.UserResponse;
+import com.example.VolunteerHub.entity.OrganizerProfiles;
 import com.example.VolunteerHub.entity.Profiles;
 import com.example.VolunteerHub.entity.Users;
+import com.example.VolunteerHub.entity.VolunteerProfiles;
+import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
 import com.example.VolunteerHub.mapper.ProfileMapper;
+import com.example.VolunteerHub.repository.OrganizerProfileRepository;
 import com.example.VolunteerHub.repository.ProfileRepository;
 import com.example.VolunteerHub.repository.UserRepository;
+import com.example.VolunteerHub.repository.VolunteerProfileRepository;
+import com.example.VolunteerHub.utils.AuthUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -25,6 +34,9 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProfileService {
     ProfileRepository profileRepository;
+    VolunteerProfileRepository volunteerProfileRepository;
+    OrganizerProfileRepository organizerProfileRepository;
+    UserService userService;
     UserRepository userRepository;
 
     public void updateProfile(ProfileUpdateRequest request) {
@@ -66,8 +78,22 @@ public class ProfileService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Profiles profile = profileRepository.findByUserId(user.getId());
+        VolunteerProfiles volunteerProfile = volunteerProfileRepository.findByUserId(user.getId());
+        OrganizerProfiles organizerProfile = organizerProfileRepository.findByUserId(user.getId());
 
-        return ProfileMapper
-                .toProfileResponse(profile, user.getVolunteerProfile(), user.getOrganizerProfile());
+        return ProfileMapper.toProfileResponse(profile, volunteerProfile, organizerProfile);
+    }
+
+    public ProfileResponse getProfileWithUserId(UUID userId) {
+        Users user = userService.getUserById(userId);
+
+        if (user.getRole().getRole() == RoleEnum.ADMIN)
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        Profiles profile = profileRepository.findByUserId(userId);
+        VolunteerProfiles volunteerProfile = volunteerProfileRepository.findByUserId(userId);
+        OrganizerProfiles organizerProfile = organizerProfileRepository.findByUserId(userId);
+
+        return ProfileMapper.toProfileResponse(profile, volunteerProfile, organizerProfile);
     }
 }
