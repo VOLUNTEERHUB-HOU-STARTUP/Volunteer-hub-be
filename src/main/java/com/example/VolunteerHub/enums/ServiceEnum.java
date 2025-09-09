@@ -1,13 +1,14 @@
-package com.example.VolunteerHub.service;
+package com.example.VolunteerHub.enums;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
 
-@Service
+@Getter
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class DashboardService {
-
+public enum ServiceEnum {
+    ACTIVE,
+    EXPIRED
 }

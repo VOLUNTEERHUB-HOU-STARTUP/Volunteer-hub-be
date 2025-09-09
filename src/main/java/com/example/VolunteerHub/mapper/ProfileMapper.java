@@ -10,27 +10,27 @@ import org.mapstruct.Mapper;
 
 @Mapper
 public class ProfileMapper {
-    public static ProfileResponse toProfileResponse(Profiles profile, VolunteerProfiles volunteerProfile, OrganizerProfiles organizerProfile) {
+    public static ProfileResponse toProfileResponse(Profiles profile, VolunteerProfiles volunteerProfile, OrganizerProfiles organizerProfile, float rating) {
         return ProfileResponse.builder()
                 .userId(profile.getUserId())
                 .avatarUrl(profile.getAvatarUrl())
                 .fullName(profile.getFullName())
                 .isActive(profile.isActive())
                 .bio(profile.getBio())
-                .volunteerProfileResponse(toVolunteerProfileResponse(volunteerProfile))
+                .volunteerProfileResponse(toVolunteerProfileResponse(volunteerProfile, rating))
                 .organizerProfileResponse(toOrganizerProfileResponse(organizerProfile))
                 .createdAt(profile.getCreatedAt())
                 .updatedAt(profile.getUpdatedAt())
                 .build();
     }
 
-    public static VolunteerProfileResponse toVolunteerProfileResponse(VolunteerProfiles volunteerProfileResponse) {
+    public static VolunteerProfileResponse toVolunteerProfileResponse(VolunteerProfiles volunteerProfileResponse, float rating) {
         if (volunteerProfileResponse == null) return null;
 
         return VolunteerProfileResponse.builder()
                 .totalEventRegistered(volunteerProfileResponse.getTotalEventRegistered())
                 .totalEventJoined(volunteerProfileResponse.getTotalEventJoined())
-                .rating(volunteerProfileResponse.getRating())
+                .rating(rating)
                 .build();
     }
 

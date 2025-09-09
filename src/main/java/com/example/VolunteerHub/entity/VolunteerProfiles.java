@@ -26,7 +26,4 @@ public class VolunteerProfiles {
 
     @Column(name = "total_event_registered")
     int totalEventRegistered;
-
-    @Column(name = "rating")
-    float rating;
 }

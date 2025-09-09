@@ -11,6 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+      default_schema: public
     show-sql: true
   security:
     oauth2:

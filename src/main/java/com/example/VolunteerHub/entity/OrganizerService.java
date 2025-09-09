@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.entity;
 
+import com.example.VolunteerHub.enums.ServiceEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,28 +14,23 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Notifications {
+public class OrganizerService {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
-    String title;
-    String body;
-    LocalDateTime time;
-    boolean read;
-    String link;
 
-    // user
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    Users user;
+    @JoinColumn(name = "organizer_id")
+    Users organizer;
 
-    // event
     @ManyToOne
-    @JoinColumn(name = "event_id")
-    Events event;
+    @JoinColumn(name = "service_id")
+    Services service;
 
-    // report
-    @ManyToOne
-    @JoinColumn(name = "report_id")
-    Reports report;
+    int remainingPost;
+    LocalDateTime startDate;
+    LocalDateTime endDate;
+
+    @Enumerated(EnumType.STRING)
+    ServiceEnum status;
 }

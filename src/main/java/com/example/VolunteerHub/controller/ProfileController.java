@@ -19,7 +19,7 @@ import java.util.UUID;
 public class ProfileController {
     ProfileService profileService;
 
-    @PostMapping("/update")
+    @PatchMapping("/update")
     ApiResponse<Void> updateProfile(@RequestBody ProfileUpdateRequest request) {
         profileService.updateProfile(request);
 

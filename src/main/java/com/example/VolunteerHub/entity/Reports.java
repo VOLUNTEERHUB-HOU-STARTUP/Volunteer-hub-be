@@ -1,14 +1,18 @@
 package com.example.VolunteerHub.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.VolunteerHub.enums.ReportTypeEnum;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.UUID;
 
+@Table(
+        indexes = {
+                @Index(name = "idx_report_resolved", columnList = "resolved")
+        }
+)
 @Entity
 @Data
 @AllArgsConstructor
@@ -20,8 +24,12 @@ public class Reports {
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    String type;    // abuse, spam...
+    @Enumerated(EnumType.STRING)
+    ReportTypeEnum type;
     String content;
     boolean resolved;
 
+    // notification
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Notifications> listNotification;
 }

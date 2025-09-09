@@ -2,6 +2,7 @@ package com.example.VolunteerHub.service;
 
 import com.example.VolunteerHub.dto.request.EventChangePublishedRequest;
 import com.example.VolunteerHub.dto.request.EventCreationRequest;
+import com.example.VolunteerHub.dto.request.EventUpdateRequest;
 import com.example.VolunteerHub.dto.response.EventMediaResponse;
 import com.example.VolunteerHub.dto.response.EventResponse;
 import com.example.VolunteerHub.entity.EventMedias;
@@ -99,6 +100,64 @@ public class EventService {
 
         eventRepository.save(event);
     }
+
+    public void updateEvent(String slug, EventUpdateRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Events event = eventRepository.findBySlug(slug);
+
+        if (event == null)
+            throw new AppException(ErrorCode.EVENT_NOT_EXISTED);
+
+        if (!eventRepository.isEventOwner(user.getId(), event.getId()))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        if (request.getListDeleteMediaId() != null && !request.getListDeleteMediaId().isEmpty()) {
+            event.getEventMedia().removeIf(eventMedia ->
+                    request.getListDeleteMediaId().contains(eventMedia.getId()));
+        }
+
+        if (request.getListEventMedia() != null && !request.getListEventMedia().isEmpty()) {
+            for (MultipartFile thisFile : request.getListEventMedia()) {
+                if (!thisFile.isEmpty()) {
+                    Map<String, String> file;
+
+                    try {
+                        file = cloudinaryService.uploadFile(thisFile);
+                    } catch (IOException e) {
+                        throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+                    }
+
+                    String fileUrl = file.get("url");
+                    String fileType = file.get("type");
+
+                    EventMedias media = EventMedias.builder()
+                            .mediaType(fileType.equals("VIDEO") ? MediaTypeEnum.VIDEO : MediaTypeEnum.IMAGE)
+                            .mediaUrl(fileUrl)
+                            .event(event)
+                            .build();
+
+                    event.getEventMedia().add(media);
+                }
+            }
+        }
+
+        event.setPublished(false);
+        event.setLocation(request.getLocation());
+        event.setDescription(request.getDescription());
+        event.setSalary(request.getSalary());
+        event.setStartAt(request.getStartAt());
+        event.setEndAt(request.getEndAt());
+        event.setDeadline(request.getDeadline());
+        event.setMaxVolunteer(request.getMaxVolunteer());
+
+        eventRepository.save(event);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     public List<EventResponse> getListEventWithPaging(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -160,6 +219,66 @@ public class EventService {
                 .toList();
     }
 
+    public List<EventResponse> getListEventByUser(int page, int size) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Events> eventList = eventRepository.findEventByUserId(user.getId(), pageable);
+
+        return eventList.stream()
+                .filter(event ->
+                        event.isPublished() &&
+                                LocalDateTime.now().isBefore(event.getEndAt())
+                )
+                .map(EventMapper::mapToResponse)
+                .toList();
+    }
+
+    public List<EventResponse> getListEventPublishedByUser(int page, int size) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Events> eventList = eventRepository.findPublishedEventsByUserId(user.getId(), pageable);
+
+        return eventList.stream()
+                .filter(event ->
+                        event.isPublished() &&
+                                LocalDateTime.now().isBefore(event.getEndAt())
+                )
+                .map(EventMapper::mapToResponse)
+                .toList();
+    }
+
+    public List<EventResponse> getListEventUnPublishedByUser(int page, int size) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Events> eventList = eventRepository.findUnpublishedEventsByUserId(user.getId(), pageable);
+
+        return eventList.stream()
+                .filter(event ->
+                        event.isPublished() &&
+                                LocalDateTime.now().isBefore(event.getEndAt())
+                )
+                .map(EventMapper::mapToResponse)
+                .toList();
+    }
+
     public List<EventResponse> getListEventWithoutAdminRole(int page, int size) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
@@ -213,6 +332,26 @@ public class EventService {
         return EventMapper.mapToResponse(event);
     }
 
+    public EventResponse getEventBySlug(String slug) {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Events event = eventRepository.findBySlug(slug);
+
+        if (event == null)
+            throw new AppException(ErrorCode.EVENT_NOT_EXISTED);
+
+        if (!event.isPublished() &&
+                (user.getRole().getRole() != RoleEnum.ADMIN &&
+                        !eventRepository.isEventOwner(user.getId(), event.getId())))
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        return EventMapper.mapToResponse(event);
+    }
+
     public EventResponse changePublished(EventChangePublishedRequest request) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
@@ -249,5 +388,25 @@ public class EventService {
 
         if (role == RoleEnum.ADMIN || eventRepository.isEventOwner(user.getId(), event.getId()))
             eventRepository.delete(event);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void approveEvent(UUID eventId) {
+        Events event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
+
+        event.setPublished(true);
+
+        eventRepository.save(event);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void rejectEvent(UUID eventId) {
+        Events event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
+
+        event.setPublished(false);
+
+        eventRepository.save(event);
     }
 }

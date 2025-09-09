@@ -1,10 +1,12 @@
 package com.example.VolunteerHub.entity;
 
+import com.example.VolunteerHub.enums.ServiceEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -13,28 +15,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Notifications {
+public class Services {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
+
+    @Column(name = "title", unique = true)
     String title;
-    String body;
-    LocalDateTime time;
-    boolean read;
-    String link;
+    int maxPosts;
+    int durationInDays;
 
-    // user
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    Users user;
-
-    // event
-    @ManyToOne
-    @JoinColumn(name = "event_id")
-    Events event;
-
-    // report
-    @ManyToOne
-    @JoinColumn(name = "report_id")
-    Reports report;
+    //OrganizerService
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<OrganizerService> listOrganizerService;
 }

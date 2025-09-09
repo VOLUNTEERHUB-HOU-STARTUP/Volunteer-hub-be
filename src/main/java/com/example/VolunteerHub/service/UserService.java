@@ -7,6 +7,7 @@ import com.example.VolunteerHub.dto.response.UserCreationResponse;
 import com.example.VolunteerHub.dto.response.UserProfileResponse;
 import com.example.VolunteerHub.dto.response.UserResponse;
 import com.example.VolunteerHub.entity.*;
+import com.example.VolunteerHub.enums.AccountStatusEnum;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
 import com.example.VolunteerHub.exception.ErrorCode;
@@ -38,7 +39,6 @@ public class UserService {
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
-    AuthUtil authUtil;
 
     @Transactional
     public UserCreationResponse createUser(UserCreationRequest request) {
@@ -56,6 +56,7 @@ public class UserService {
         Users user = Users.builder()
                 .email(request.getEmail())
                 .role(role)
+                .status(AccountStatusEnum.VERIFIED)
                 .build();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
@@ -68,7 +69,6 @@ public class UserService {
             case VOLUNTEER -> {
                 VolunteerProfiles volunteerProfile = VolunteerProfiles.builder()
                         .user(user)
-                        .rating(0)
                         .totalEventJoined(0)
                         .totalEventRegistered(0)
                         .build();
@@ -140,12 +140,24 @@ public class UserService {
                                 .user(user)
                                 .totalEventJoined(0)
                                 .totalEventRegistered(0)
-                                .rating(0)
                         .build());
             }
         }
 
         user.setRole(role);
+        userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void banUser(UUID userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (user.getRole().getRole() == RoleEnum.ADMIN)
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+
+        user.setStatus(AccountStatusEnum.BANNED);
+
         userRepository.save(user);
     }
 

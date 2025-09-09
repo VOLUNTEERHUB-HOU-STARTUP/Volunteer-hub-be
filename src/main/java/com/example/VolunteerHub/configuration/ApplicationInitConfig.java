@@ -1,6 +1,7 @@
 package com.example.VolunteerHub.configuration;
 
 import com.example.VolunteerHub.entity.Profiles;
+import com.example.VolunteerHub.entity.Roles;
 import com.example.VolunteerHub.entity.Users;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.repository.ProfileRepository;
@@ -18,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -35,6 +38,17 @@ public class ApplicationInitConfig {
             havingValue = "org.postgresql.Driver")
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {
+            List<RoleEnum> rolesList = List.of(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.VOLUNTEER);
+
+            // Chỉ tạo role nếu chưa tồn tại
+            rolesList.forEach(roleEnum -> {
+                if (roleRepository.findByRole(roleEnum) == null) {
+                    roleRepository.save(Roles.builder()
+                                    .role(roleEnum)
+                                    .build());
+                }
+            });
+
             if (userRepository.findByEmail("admin@system.com").isEmpty()) {
                 var role = roleRepository.findByRole(RoleEnum.ADMIN);
 

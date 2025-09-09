@@ -24,6 +24,7 @@ public class EventMedias {
     Events event;
 
     @Column(name = "media_type")
+    @Enumerated(EnumType.STRING)
     MediaTypeEnum mediaType;
 
     @Column(name = "media_url")

@@ -9,7 +9,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-
+@Table(
+        indexes = {
+                @Index(name = "idx_event_isPublished", columnList = "is_published"),
+                @Index(name = "idx_event_slug", columnList = "slug"),
+                @Index(name = "idx_event_startAt", columnList = "start_at"),
+                @Index(name = "idx_event_deadline", columnList = "deadline")
+        }
+)
 @Entity
 @Data
 @NoArgsConstructor
@@ -86,4 +93,8 @@ public class Events {
     // event volunteer
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     List<EventVolunteers> eventVolunteers;
+
+    // notification
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Notifications> listNotification;
 }

@@ -1,4 +1,5 @@
-package com.example.VolunteerHub.dto.response;
+package com.example.VolunteerHub.dto.request;
+
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,9 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class NotificationResponse {
+public class NotificationCreationRequest {
     String title;
-    String body;
     LocalDateTime time;
     boolean read;
     String link;

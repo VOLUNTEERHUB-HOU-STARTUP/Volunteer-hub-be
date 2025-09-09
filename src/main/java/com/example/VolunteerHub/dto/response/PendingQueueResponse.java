@@ -9,15 +9,16 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PendingQueueResponse {
-    int events;
-    int connections;
+    int events; // event
+    int connections; // message
     int content;
-    int reports;
+    int reports; // report
     int support;
     int admin;
-    int user;
-    int partners;
+    int user; // volunteer
+    int partners; // organizer
     int services;
+
     int systemAlerts;
     int backup;
     int setting;

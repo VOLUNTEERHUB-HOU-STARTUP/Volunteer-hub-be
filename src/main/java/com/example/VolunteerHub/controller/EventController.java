@@ -96,6 +96,13 @@ public class EventController {
                 .build();
     }
 
+    @GetMapping("/{slug}")
+    ApiResponse<EventResponse> getEventBySlug(@PathVariable String slug) {
+        return ApiResponse.<EventResponse>builder()
+                .result(eventService.getEventBySlug(slug))
+                .build();
+    }
+
     @PostMapping("/change")
     ApiResponse<EventResponse> changePublished(@RequestBody EventChangePublishedRequest request) {
         return ApiResponse.<EventResponse>builder()

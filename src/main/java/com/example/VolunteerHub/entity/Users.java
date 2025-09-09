@@ -1,15 +1,18 @@
 package com.example.VolunteerHub.entity;
 
+import com.example.VolunteerHub.enums.AccountStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
+@Table(
+        indexes = {
+                @Index(name = "idx_user_role", columnList = "role_id")
+        }
+)
 @Entity
 @Data
 @Builder
@@ -27,6 +30,10 @@ public class Users {
 
     @Column(name = "password")
     String password;
+
+    @Column(name = "status")
+            @Enumerated(EnumType.STRING)
+    AccountStatusEnum status;
 
     // profiles
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -56,4 +63,24 @@ public class Users {
     // if organizer
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     OrganizerProfiles organizerProfile;
+
+    // notification
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Notifications> listNotification;
+
+    // Content
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Contents> listContent;
+
+    // organizer service
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<OrganizerService> listOrganizerService;
+
+    // rating
+    @OneToMany(mappedBy = "volunteer", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<VolunteerRating> listVolunteerRating;
+
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<VolunteerRating> listOrganizerRating;
+
 }

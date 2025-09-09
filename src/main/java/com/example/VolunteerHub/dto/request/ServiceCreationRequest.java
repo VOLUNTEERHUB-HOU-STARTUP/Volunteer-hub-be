@@ -1,5 +1,6 @@
-package com.example.VolunteerHub.dto.response;
+package com.example.VolunteerHub.dto.request;
 
+import com.example.VolunteerHub.enums.ServiceEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,10 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class NotificationResponse {
+public class ServiceCreationRequest {
     String title;
-    String body;
-    LocalDateTime time;
-    boolean read;
-    String link;
+    int maxPosts;
+    int durationInDays;
 }
