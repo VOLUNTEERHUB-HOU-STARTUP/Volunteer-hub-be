@@ -26,6 +26,7 @@ public class EventResponse {
     LocalDateTime startAt;
     LocalDateTime endAt;
     int maxVolunteer;
+    boolean autoAccept;
     boolean isPublished;
     LocalDateTime updatedAt;
     LocalDateTime createdAt;

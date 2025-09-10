@@ -5,11 +5,15 @@ import com.example.VolunteerHub.dto.request.EventUpdateRequest;
 import com.example.VolunteerHub.dto.request.ProfileUpdateRequest;
 import com.example.VolunteerHub.dto.request.VolunteerRatingRequest;
 import com.example.VolunteerHub.dto.response.*;
+import com.example.VolunteerHub.entity.EventMedias;
 import com.example.VolunteerHub.service.OrganizerDashboardService;
+import jdk.jfr.Event;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -59,14 +63,20 @@ public class OrganizerDashboardController {
                 .build();
     }
 
-    @PostMapping("/events/create")
-    ApiResponse<Void> createEvent(@RequestBody EventCreationRequest request) {
+    @PostMapping(value = "/events/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<Void> createEvent(
+            @ModelAttribute EventCreationRequest request
+    ) {
         organizerDashboardService.createEvent(request);
+
         return ApiResponse.<Void>builder().build();
     }
 
-    @PatchMapping("/events/{slug}/update")
-    ApiResponse<Void> updateEvent(@PathVariable String slug, @RequestBody EventUpdateRequest request) {
+    @PatchMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<Void> updateEvent(
+            @PathVariable String slug,
+            @ModelAttribute EventUpdateRequest request
+            ) {
         organizerDashboardService.updateEvent(slug, request);
 
         return ApiResponse.<Void>builder().build();

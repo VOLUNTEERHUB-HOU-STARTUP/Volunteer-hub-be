@@ -22,6 +22,7 @@ public class EventMapper {
                 .endAt(request.getEndAt())
                 .isPublished(false)
                 .deadline(request.getDeadline())
+                .autoAccept(request.isAutoAccept())
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -49,6 +50,7 @@ public class EventMapper {
                 .startAt(event.getStartAt())
                 .endAt(event.getEndAt())
                 .deadline(event.getDeadline())
+                .autoAccept(event.isAutoAccept())
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .build();

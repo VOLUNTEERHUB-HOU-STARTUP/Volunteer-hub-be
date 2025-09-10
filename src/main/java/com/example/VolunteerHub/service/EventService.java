@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,12 +72,16 @@ public class EventService {
                 .endAt(request.getEndAt())
                 .isPublished(false)
                 .deadline(request.getDeadline())
+                .autoAccept(request.isAutoAccept())
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        List<EventMedias> eventMediasList = new ArrayList<>();
+
         for (MultipartFile thisFile : request.getListEventMedia()) {
             if (!thisFile.isEmpty()) {
+                log.info("co file");
                 Map<String, String> file;
 
                 try {
@@ -94,9 +99,11 @@ public class EventService {
                         .event(event)
                         .build();
 
-                event.getEventMedia().add(media);
+                eventMediasList.add(media);
             }
         }
+
+        event.setEventMedia(eventMediasList);
 
         eventRepository.save(event);
     }

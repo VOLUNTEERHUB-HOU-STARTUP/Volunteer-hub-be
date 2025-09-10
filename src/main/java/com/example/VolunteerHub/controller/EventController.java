@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,12 +23,12 @@ import java.util.UUID;
 public class EventController {
     EventService eventService;
 
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ApiResponse<Void> createEvent(@ModelAttribute EventCreationRequest request) {
-        eventService.createEvent(request);
-        return ApiResponse.<Void>builder()
-                .build();
-    }
+//    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    ApiResponse<Void> createEvent(@ModelAttribute EventCreationRequest request) {
+//        eventService.createEvent(request);
+//        return ApiResponse.<Void>builder()
+//                .build();
+//    }
 
     @GetMapping("/admin/get-all")
     ApiResponse<List<EventResponse>> getListEventWithPaging(
