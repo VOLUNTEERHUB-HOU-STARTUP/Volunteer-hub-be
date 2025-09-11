@@ -48,13 +48,13 @@ public class OrganizerDashboardService {
     }
 
     @PreAuthorize("hasRole('ORGANIZER')")
-    public void createEvent(EventCreationRequest request) {
-        eventService.createEvent(request);
+    public void createEvent(EventCreationRequest request,boolean isDraft) {
+        eventService.createEvent(request, isDraft);
     }
 
     @PreAuthorize("hasRole('ORGANIZER')")
-    public void updateEvent(String slug, EventUpdateRequest request) {
-        eventService.updateEvent(slug, request);
+    public void updateEvent(String slug, EventUpdateRequest request, boolean isDraft) {
+        eventService.updateEvent(slug, request, isDraft);
     }
     // profile
     @PreAuthorize("hasRole('ORGANIZER')")

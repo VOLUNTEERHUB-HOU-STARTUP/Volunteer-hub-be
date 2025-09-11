@@ -5,6 +5,7 @@ import com.example.VolunteerHub.dto.response.EventResponse;
 import com.example.VolunteerHub.dto.response.EventVolunteerResponse;
 import com.example.VolunteerHub.dto.response.ProfileResponse;
 import com.example.VolunteerHub.entity.*;
+import com.example.VolunteerHub.enums.EventStatusEnum;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.enums.VolunteerStatusEnum;
 import com.example.VolunteerHub.exception.AppException;
@@ -54,7 +55,7 @@ public class EventVolunteerService {
         Events event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
 
-        if (!event.isPublished())
+        if (!(event.getStatus() == EventStatusEnum.IS_PUBLISHED))
             throw new AppException(ErrorCode.EVENT_NOT_PUBLISH);
 
         if (eventVolunteerRepository.checkExisted(user.getId(), event.getId()))

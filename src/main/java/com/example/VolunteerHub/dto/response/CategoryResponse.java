@@ -1,4 +1,4 @@
-package com.example.VolunteerHub.dto.request;
+package com.example.VolunteerHub.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,6 +10,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EventChangePublishedRequest {
+public class CategoryResponse {
     UUID id;
+    String value;
+    String label;
 }

@@ -83,4 +83,12 @@ public class Users {
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
     List<VolunteerRating> listOrganizerRating;
 
+    // event like
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<EventLikes> listEventLike;
+
+    // event comment
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<EventComments> listEventComment;
+
 }

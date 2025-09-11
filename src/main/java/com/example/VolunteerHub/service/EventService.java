@@ -1,13 +1,10 @@
 package com.example.VolunteerHub.service;
 
-import com.example.VolunteerHub.dto.request.EventChangePublishedRequest;
 import com.example.VolunteerHub.dto.request.EventCreationRequest;
 import com.example.VolunteerHub.dto.request.EventUpdateRequest;
-import com.example.VolunteerHub.dto.response.EventMediaResponse;
 import com.example.VolunteerHub.dto.response.EventResponse;
-import com.example.VolunteerHub.entity.EventMedias;
-import com.example.VolunteerHub.entity.Events;
-import com.example.VolunteerHub.entity.Users;
+import com.example.VolunteerHub.entity.*;
+import com.example.VolunteerHub.enums.EventStatusEnum;
 import com.example.VolunteerHub.enums.MediaTypeEnum;
 import com.example.VolunteerHub.enums.RoleEnum;
 import com.example.VolunteerHub.exception.AppException;
@@ -15,7 +12,6 @@ import com.example.VolunteerHub.exception.ErrorCode;
 import com.example.VolunteerHub.mapper.EventMapper;
 import com.example.VolunteerHub.repository.EventRepository;
 import com.example.VolunteerHub.repository.UserRepository;
-import com.example.VolunteerHub.utils.AuthUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,13 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +39,12 @@ public class EventService {
     EventRepository eventRepository;
     CloudinaryService cloudinaryService;
     UserRepository userRepository;
+    CategoryService categoryService;
+    RequiredSkillService requiredSkillService;
+    TypeTagService typeTagService;
+    InterestService interestService;
 
-    public void createEvent(EventCreationRequest request) {
+    public void createEvent(EventCreationRequest request, boolean isDraft) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
@@ -54,6 +52,7 @@ public class EventService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var role = user.getRole().getRole();
+
         if (role == RoleEnum.VOLUNTEER)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
@@ -68,20 +67,79 @@ public class EventService {
                 .description(request.getDescription())
                 .salary(request.getSalary())
                 .location(request.getLocation())
+                .detailLocation(request.getDetailLocation())
                 .startAt(request.getStartAt())
                 .endAt(request.getEndAt())
-                .isPublished(false)
                 .deadline(request.getDeadline())
                 .autoAccept(request.isAutoAccept())
+                .type(request.getType())
+                .minAge(request.getMinAge())
+                .maxAge(request.getMaxAge())
+                .maxVolunteer(request.getMaxVolunteer())
+                .sex(request.getSex())
+                .experience(request.getExperience())
+                .coverImage(request.getCoverImage())
+                .online(request.isOnline())
+                .leaderName(request.getLeaderName())
+                .leaderPhone(request.getLeaderPhone())
+                .leader_email(request.getLeaderEmail())
+                .subContact(request.getSubContact())
+                .priority(request.getPriority())
+                .status(isDraft ? EventStatusEnum.DRAFT :
+                        role == RoleEnum.ADMIN ? EventStatusEnum.IS_PUBLISHED : EventStatusEnum.PENDING
+                )
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
+
+        // Category
+        if (request.getCategories() != null) {
+            List<EventCategory> categories = request.getCategories().stream()
+                    .map(cat -> EventCategory.builder()
+                            .event(event)
+                            .category(categoryService.getCategoryByString(cat))
+                            .build())
+                    .toList();
+            event.setEventCategories(categories);
+        }
+
+        // Required Skills
+        if (request.getSkills() != null) {
+            List<EventRequiredSkill> skills = request.getSkills().stream()
+                    .map(skill -> EventRequiredSkill.builder()
+                            .event(event)
+                            .requiredSkill(requiredSkillService.getRequiredSkillByString(skill))
+                            .build())
+                    .toList();
+            event.setEventRequiredSkills(skills);
+        }
+
+        // Tags
+        if (request.getTags() != null) {
+            List<EventTypeTag> tags = request.getTags().stream()
+                    .map(tag -> EventTypeTag.builder()
+                            .event(event)
+                            .typeTag(typeTagService.getTypeTagByString(tag))
+                            .build())
+                    .toList();
+            event.setEventTypeTags(tags);
+        }
+
+        // Interest
+        if (request.getInterest() != null) {
+            List<EventInterest> interests = request.getInterest().stream()
+                    .map(interest -> EventInterest.builder()
+                            .event(event)
+                            .interest(interestService.getInterestByString(interest))
+                            .build())
+                    .toList();
+            event.setEventInterests(interests);
+        }
 
         List<EventMedias> eventMediasList = new ArrayList<>();
 
         for (MultipartFile thisFile : request.getListEventMedia()) {
             if (!thisFile.isEmpty()) {
-                log.info("co file");
                 Map<String, String> file;
 
                 try {
@@ -102,13 +160,12 @@ public class EventService {
                 eventMediasList.add(media);
             }
         }
-
         event.setEventMedia(eventMediasList);
 
         eventRepository.save(event);
     }
 
-    public void updateEvent(String slug, EventUpdateRequest request) {
+    public void updateEvent(String slug, EventUpdateRequest request, boolean isDraft) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
@@ -153,7 +210,12 @@ public class EventService {
             }
         }
 
-        event.setPublished(false);
+        event.setStatus(isDraft
+                ? EventStatusEnum.DRAFT
+                : user.getRole().getRole() == RoleEnum.ADMIN
+                    ? EventStatusEnum.IS_PUBLISHED
+                    : EventStatusEnum.PENDING
+        );
         event.setLocation(request.getLocation());
         event.setDescription(request.getDescription());
         event.setSalary(request.getSalary());
@@ -180,50 +242,28 @@ public class EventService {
     public List<EventResponse> getListEventNotPublishedWithPaging(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
+        Page<Events> eventList = eventRepository.findByStatus(EventStatusEnum.PENDING, pageable);
 
-        return eventList.stream()
-                .filter(event ->!event.isPublished())
-                .map(EventMapper::mapToResponse)
-                .toList();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<EventResponse> getListEventWaitingWithPaging(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
-
-        return eventList.stream()
-                .filter(event -> !event.isPublished() && LocalDateTime.now().isAfter(event.getEndAt()))
-                .map(EventMapper::mapToResponse)
-                .toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<EventResponse> getListEventExpired(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
+        Page<Events> eventList =
+                eventRepository.findExpiredEvents(LocalDateTime.now(), EventStatusEnum.IS_PUBLISHED, pageable);
 
-        return eventList.stream()
-                .filter(event -> LocalDateTime.now().isAfter(event.getEndAt()))
-                .map(EventMapper::mapToResponse).toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<EventResponse> getListEventPublishedWithPaging(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
+        Page<Events> eventList = eventRepository.findByStatus(EventStatusEnum.IS_PUBLISHED, pageable);
 
-        return eventList.stream()
-                .filter(event ->
-                        LocalDateTime.now().isBefore(event.getEndAt()) &&
-                        event.isPublished()
-                )
-                .map(EventMapper::mapToResponse)
-                .toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     public List<EventResponse> getListEventByUser(int page, int size) {
@@ -237,13 +277,7 @@ public class EventService {
 
         Page<Events> eventList = eventRepository.findEventByUserId(user.getId(), pageable);
 
-        return eventList.stream()
-                .filter(event ->
-                        event.isPublished() &&
-                                LocalDateTime.now().isBefore(event.getEndAt())
-                )
-                .map(EventMapper::mapToResponse)
-                .toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     public List<EventResponse> getListEventPublishedByUser(int page, int size) {
@@ -255,15 +289,10 @@ public class EventService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.findPublishedEventsByUserId(user.getId(), pageable);
+        Page<Events> eventList =
+                eventRepository.findPublishedEventsByUserId(user.getId(), EventStatusEnum.IS_PUBLISHED, pageable);
 
-        return eventList.stream()
-                .filter(event ->
-                        event.isPublished() &&
-                                LocalDateTime.now().isBefore(event.getEndAt())
-                )
-                .map(EventMapper::mapToResponse)
-                .toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     public List<EventResponse> getListEventUnPublishedByUser(int page, int size) {
@@ -275,48 +304,29 @@ public class EventService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.findUnpublishedEventsByUserId(user.getId(), pageable);
+        Page<Events> eventList =
+                eventRepository.findUnpublishedEventsByUserId(user.getId(), EventStatusEnum.IS_PUBLISHED, pageable);
 
-        return eventList.stream()
-                .filter(event ->
-                        event.isPublished() &&
-                                LocalDateTime.now().isBefore(event.getEndAt())
-                )
-                .map(EventMapper::mapToResponse)
-                .toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     public List<EventResponse> getListEventWithoutAdminRole(int page, int size) {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
-
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.findPublishedActiveEvents(LocalDateTime.now(), pageable);
+        Page<Events> eventList =
+                eventRepository.findPublishedActiveEvents(LocalDateTime.now(), EventStatusEnum.IS_PUBLISHED, pageable);
 
-        return eventList.stream()
-                .filter(event ->
-                        event.isPublished() &&
-                        LocalDateTime.now().isBefore(event.getEndAt())
-                )
-                .map(EventMapper::mapToResponse)
-                .toList();
+        return eventList.stream().map(EventMapper::mapToResponse).toList();
     }
 
     public List<EventResponse> getListEventHasExpiredWithoutAdminRole(int page, int size) {
-
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Events> eventList = eventRepository.getEventWithPaging(pageable);
+        Page<Events> eventList =
+                eventRepository.findExpiredEvents(LocalDateTime.now(), EventStatusEnum.IS_PUBLISHED, pageable);
 
         return eventList.stream()
-                .filter(event ->
-                                event.isPublished() &&
-                                LocalDateTime.now().isAfter(event.getEndAt())
-                )
+                .filter(event -> LocalDateTime.now().isAfter(event.getEndAt()))
                 .map(EventMapper::mapToResponse)
                 .toList();
     }
@@ -331,7 +341,7 @@ public class EventService {
         Events event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
 
-        if (!event.isPublished() &&
+        if (!(event.getStatus() == EventStatusEnum.IS_PUBLISHED) &&
                 (user.getRole().getRole() != RoleEnum.ADMIN &&
                         !eventRepository.isEventOwner(user.getId(), event.getId())))
             throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -351,32 +361,10 @@ public class EventService {
         if (event == null)
             throw new AppException(ErrorCode.EVENT_NOT_EXISTED);
 
-        if (!event.isPublished() &&
+        if (!(event.getStatus() == EventStatusEnum.IS_PUBLISHED) &&
                 (user.getRole().getRole() != RoleEnum.ADMIN &&
                         !eventRepository.isEventOwner(user.getId(), event.getId())))
             throw new AppException(ErrorCode.UNAUTHORIZED);
-
-        return EventMapper.mapToResponse(event);
-    }
-
-    public EventResponse changePublished(EventChangePublishedRequest request) {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
-
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        var role = user.getRole().getRole();
-
-        if (role != RoleEnum.ADMIN)
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-
-        Events event = eventRepository.findById(request.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
-
-        event.setPublished(!event.isPublished());
-
-        event = eventRepository.save(event);
 
         return EventMapper.mapToResponse(event);
     }
@@ -402,7 +390,7 @@ public class EventService {
         Events event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
 
-        event.setPublished(true);
+        event.setStatus(EventStatusEnum.IS_PUBLISHED);
 
         eventRepository.save(event);
     }
@@ -412,7 +400,7 @@ public class EventService {
         Events event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
 
-        event.setPublished(false);
+        event.setStatus(EventStatusEnum.REJECTED);
 
         eventRepository.save(event);
     }

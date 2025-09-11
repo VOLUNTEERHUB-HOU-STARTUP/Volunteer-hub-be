@@ -1,6 +1,7 @@
 package com.example.VolunteerHub.repository;
 
 import com.example.VolunteerHub.entity.Events;
+import com.example.VolunteerHub.enums.EventStatusEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,8 +30,8 @@ public interface EventRepository extends JpaRepository<Events, UUID> {
     boolean isEventOwnerBySlug(UUID userId, String slug);
 
     @Query("SELECT e FROM Events e " +
-            "WHERE e.isPublished = true AND e.endAt > :now")
-    Page<Events> findPublishedActiveEvents(LocalDateTime now, Pageable pageable);
+            "WHERE e.status = :status AND e.endAt > :now")
+    Page<Events> findPublishedActiveEvents(LocalDateTime now, EventStatusEnum status, Pageable pageable);
 
     @Query("select e from Events e " +
             "where e.user.id = :userId " +
@@ -38,16 +39,23 @@ public interface EventRepository extends JpaRepository<Events, UUID> {
     Page<Events> findEventByUserId(UUID userId, Pageable pageable);
 
     @Query("SELECT e FROM Events e " +
-            "WHERE e.user.id = :userId AND e.isPublished = true " +
+            "WHERE e.user.id = :userId AND e.status = :status " +
             "ORDER BY e.createdAt DESC")
-    Page<Events> findPublishedEventsByUserId(UUID userId, Pageable pageable);
+    Page<Events> findPublishedEventsByUserId(UUID userId, EventStatusEnum status, Pageable pageable);
 
     @Query("SELECT e FROM Events e " +
-            "WHERE e.user.id = :userId AND e.isPublished = false " +
+            "WHERE e.user.id = :userId AND e.status != :status " +
             "ORDER BY e.createdAt DESC")
-    Page<Events> findUnpublishedEventsByUserId(UUID userId, Pageable pageable);
+    Page<Events> findUnpublishedEventsByUserId(UUID userId, EventStatusEnum status, Pageable pageable);
 
     @Query("select e from Events e " +
             "where e.slug = :slug")
     Events findBySlug(String slug);
+
+    @Query("SELECT e FROM Events e " +
+            "WHERE e.status = :status " +
+            "AND e.endAt < :now")
+    Page<Events> findExpiredEvents(LocalDateTime now, EventStatusEnum status, Pageable pageable);
+
+    Page<Events> findByStatus(EventStatusEnum status, Pageable pageable);
 }

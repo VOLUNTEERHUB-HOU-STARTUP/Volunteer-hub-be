@@ -65,9 +65,10 @@ public class OrganizerDashboardController {
 
     @PostMapping(value = "/events/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<Void> createEvent(
-            @ModelAttribute EventCreationRequest request
+            @ModelAttribute EventCreationRequest request,
+            @RequestParam boolean isDraft
     ) {
-        organizerDashboardService.createEvent(request);
+        organizerDashboardService.createEvent(request, isDraft);
 
         return ApiResponse.<Void>builder().build();
     }
@@ -75,9 +76,10 @@ public class OrganizerDashboardController {
     @PatchMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<Void> updateEvent(
             @PathVariable String slug,
-            @ModelAttribute EventUpdateRequest request
+            @ModelAttribute EventUpdateRequest request,
+            @RequestParam boolean isDraft
             ) {
-        organizerDashboardService.updateEvent(slug, request);
+        organizerDashboardService.updateEvent(slug, request, isDraft);
 
         return ApiResponse.<Void>builder().build();
     }

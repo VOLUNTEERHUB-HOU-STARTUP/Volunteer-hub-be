@@ -27,6 +27,22 @@ public enum ErrorCode {
     EVENT_EXISTED(2001, "event existed", HttpStatus.BAD_REQUEST),
     EVENT_NOT_PUBLISH(2002, "event do not public for everyone", HttpStatus.BAD_REQUEST),
 
+    // 2100 - 2199: Category
+    CATEGORY_NOT_FOUND(2100, "category not found", HttpStatus.NOT_FOUND),
+    CATEGORY_EXISTED(2101, "category existed", HttpStatus.BAD_REQUEST),
+
+    // 2200 - 2299: Required skill
+    REQUIRED_SKILL_NOT_FOUND(2200, "required skill not found", HttpStatus.NOT_FOUND),
+    REQUIRED_SKILL_EXISTED(2201, "required skill existed", HttpStatus.BAD_REQUEST),
+
+    // 2300 - 2399: type tag
+    TYPE_TAG_NOT_FOUND(2300, "type tag not found", HttpStatus.NOT_FOUND),
+    TYPE_TAG_EXISTED(2301, "type tag existed", HttpStatus.BAD_REQUEST),
+
+    // 2400 - 2499: type tag
+    INTEREST_NOT_FOUND(2400, "interest not found", HttpStatus.NOT_FOUND),
+    INTEREST_EXISTED(2401, "interest existed", HttpStatus.BAD_REQUEST),
+
     // 3000 - 3099: Event volunteers
     EVENT_VOLUNTEER_NOT_EXISTED(3000, "event volunteer not existed", HttpStatus.NOT_FOUND),
 

@@ -1,17 +1,12 @@
 package com.example.VolunteerHub.controller;
 
-import com.example.VolunteerHub.dto.request.EventChangePublishedRequest;
-import com.example.VolunteerHub.dto.request.EventCreationRequest;
 import com.example.VolunteerHub.dto.response.ApiResponse;
 import com.example.VolunteerHub.dto.response.EventResponse;
 import com.example.VolunteerHub.service.EventService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -101,13 +96,6 @@ public class EventController {
     ApiResponse<EventResponse> getEventBySlug(@PathVariable String slug) {
         return ApiResponse.<EventResponse>builder()
                 .result(eventService.getEventBySlug(slug))
-                .build();
-    }
-
-    @PostMapping("/change")
-    ApiResponse<EventResponse> changePublished(@RequestBody EventChangePublishedRequest request) {
-        return ApiResponse.<EventResponse>builder()
-                .result(eventService.changePublished(request))
                 .build();
     }
 

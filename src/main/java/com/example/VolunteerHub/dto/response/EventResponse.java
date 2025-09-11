@@ -1,5 +1,6 @@
 package com.example.VolunteerHub.dto.response;
 
+import com.example.VolunteerHub.enums.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -22,13 +23,37 @@ public class EventResponse {
     String description;
     float salary;
     String location;
+    String detailLocation;
+
     List<EventMediaResponse> eventMedia;
     LocalDateTime startAt;
     LocalDateTime endAt;
     int maxVolunteer;
     boolean autoAccept;
-    boolean isPublished;
+    EventStatusEnum status;
     LocalDateTime updatedAt;
     LocalDateTime createdAt;
     LocalDateTime deadline;
+
+    int minAge;
+    int maxAge;
+    SexEnum sex;
+    ExperienceEnum experience;
+    String coverImage;
+    boolean online;
+
+    String leaderName;
+    String leaderPhone;
+    String leaderEmail;
+    String subContact;
+
+    PriorityEnum priority;
+    EventTypeEnum type;
+
+    List<String> categories;
+    List<String> skills;
+    List<String> tags;
+
+    List<Integer> likes;
+    List<Integer> comments;
 }
