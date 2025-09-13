@@ -12,10 +12,7 @@ import java.util.List;
 import java.util.UUID;
 @Table(
         indexes = {
-//                @Index(name = "idx_event_isPublished", columnList = "is_published"),
-                @Index(name = "idx_event_slug", columnList = "slug"),
-                @Index(name = "idx_event_startAt", columnList = "start_at"),
-                @Index(name = "idx_event_deadline", columnList = "deadline")
+                @Index(name = "idx_event_slug", columnList = "slug")
         }
 )
 @Entity
@@ -52,17 +49,6 @@ public class Events {
     @Column(name = "detail_location")
     String detailLocation;
 
-    @Column(name = "start_at")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime startAt;
-
-    @Column(name = "end_at")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime endAt;
-
-    @Column(name = "max_volunteer")
-    int maxVolunteer;
-
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     EventStatusEnum status;
@@ -70,35 +56,9 @@ public class Events {
     @Column(name = "auto_accept")
     boolean autoAccept;
 
-    @Column(name = "updated_at")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime updatedAt;
-
-    @Column(name = "created_at")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime createdAt;
-
-    @Column(name = "deadline")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime deadline;
-
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     EventTypeEnum type;
-
-    @Column(name = "minAge")
-    int minAge;
-
-    @Column(name = "maxAge")
-    int maxAge;
-
-    @Column(name = "sex")
-    @Enumerated(EnumType.STRING)
-    SexEnum sex;
-
-    @Column(name = "experience")
-    @Enumerated(EnumType.STRING)
-    ExperienceEnum experience;
 
     @Column(name = "cover_image")
     String coverImage;
@@ -106,21 +66,21 @@ public class Events {
     @Column(name = "online")
     boolean online;
 
-    @Column(name = "leader_name")
-    String leaderName;
-
-    @Column(name = "leader_phone")
-    String leaderPhone;
-
-    @Column(name = "leader_email")
-    String leader_email;
-
-    @Column(name = "sub_contact")
-    String subContact; // liên hệ
-
     @Column(name = "priority")
     @Enumerated(EnumType.STRING)
     PriorityEnum priority;
+
+    // event leader
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    EventLeader leader;
+
+    // event schedule
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    EventSchedule schedule;
+
+    // event requirements
+    @OneToOne(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    EventRequirements requirements;
 
     // event type tag
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)

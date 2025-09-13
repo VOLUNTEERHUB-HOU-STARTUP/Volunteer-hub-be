@@ -26,6 +26,8 @@ public enum ErrorCode {
     EVENT_NOT_EXISTED(2000, "event not existed", HttpStatus.NOT_FOUND),
     EVENT_EXISTED(2001, "event existed", HttpStatus.BAD_REQUEST),
     EVENT_NOT_PUBLISH(2002, "event do not public for everyone", HttpStatus.BAD_REQUEST),
+    EVENT_NOT_PENDING(2003, "event not pending", HttpStatus.BAD_REQUEST),
+    EVENT_SLUG_EXISTED(2004, "event slug existed", HttpStatus.BAD_REQUEST),
 
     // 2100 - 2199: Category
     CATEGORY_NOT_FOUND(2100, "category not found", HttpStatus.NOT_FOUND),

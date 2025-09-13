@@ -7,10 +7,15 @@ import com.example.VolunteerHub.dto.request.VolunteerRatingRequest;
 import com.example.VolunteerHub.dto.response.*;
 import com.example.VolunteerHub.entity.EventMedias;
 import com.example.VolunteerHub.service.OrganizerDashboardService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jdk.jfr.Event;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/btc")
 @RequiredArgsConstructor
@@ -64,24 +70,42 @@ public class OrganizerDashboardController {
     }
 
     @PostMapping(value = "/events/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ApiResponse<Void> createEvent(
-            @ModelAttribute EventCreationRequest request,
-            @RequestParam boolean isDraft
-    ) {
-        organizerDashboardService.createEvent(request, isDraft);
+    ApiResponse<EventResponse> createEvent(
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia
+    ) throws JsonProcessingException {
+        // gửi đúng thứ tự
+        ObjectMapper mapper = new ObjectMapper();
 
-        return ApiResponse.<Void>builder().build();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        EventCreationRequest request = mapper.readValue(eventJson, EventCreationRequest.class);
+
+        return ApiResponse.<EventResponse>builder()
+                .result(organizerDashboardService.createEvent(request, coverImage, listEventMedia))
+                .build();
     }
 
     @PatchMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ApiResponse<Void> updateEvent(
-            @PathVariable String slug,
-            @ModelAttribute EventUpdateRequest request,
-            @RequestParam boolean isDraft
-            ) {
-        organizerDashboardService.updateEvent(slug, request, isDraft);
+    ApiResponse<EventResponse> updateEvent(
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia,
+            @PathVariable String slug
+    ) throws JsonProcessingException {
+        // gửi đúng thứ tự
+        ObjectMapper mapper = new ObjectMapper();
 
-        return ApiResponse.<Void>builder().build();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        EventUpdateRequest request = mapper.readValue(eventJson, EventUpdateRequest.class);
+
+        return ApiResponse.<EventResponse>builder()
+                .result(organizerDashboardService.updateEvent(slug, request, coverImage, listEventMedia))
+                .build();
     }
 
     //profile

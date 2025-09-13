@@ -33,7 +33,11 @@ spring:
             jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
   jackson:
     time-zone: Asia/Ho_Chi_Minh
-
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
 server:
   port: 8080
   address: 0.0.0.0

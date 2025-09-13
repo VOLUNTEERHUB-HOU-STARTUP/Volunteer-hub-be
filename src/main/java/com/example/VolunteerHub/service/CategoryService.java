@@ -39,6 +39,14 @@ public class CategoryService {
         return category;
     }
 
+    public CategoryResponse getDetail(String stringText) {
+        Categories category = categoryRepository.findByValue(stringText.toLowerCase());
+
+        if (category == null) throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+
+        return CategoryMapper.toResponse(category);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     public void createCategory(CategoryCreationRequest request) {
         if (categoryRepository.existsByValue(request.getValue()))

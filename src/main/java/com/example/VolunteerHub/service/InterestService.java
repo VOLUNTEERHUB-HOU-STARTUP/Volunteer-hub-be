@@ -27,6 +27,14 @@ public class InterestService {
         return interests.stream().map(InterestMapper::toResponse).toList();
     }
 
+    public InterestResponse getDetail(String stringText) {
+        Interests interests = interestRepository.findByValue(stringText.toLowerCase());
+
+        if (interests == null) throw new AppException(ErrorCode.INTEREST_NOT_FOUND);
+
+        return InterestMapper.toResponse(interests);
+    }
+
     public Interests getInterestByString(String stringText) {
         Interests interest = interestRepository.findByValue(stringText.toLowerCase());
 

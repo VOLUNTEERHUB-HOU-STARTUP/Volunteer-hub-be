@@ -10,6 +10,7 @@ import com.example.VolunteerHub.dto.response.ServiceResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -48,14 +50,15 @@ public class OrganizerDashboardService {
     }
 
     @PreAuthorize("hasRole('ORGANIZER')")
-    public void createEvent(EventCreationRequest request,boolean isDraft) {
-        eventService.createEvent(request, isDraft);
+    public EventResponse createEvent(EventCreationRequest request, MultipartFile coverImage, List<MultipartFile> listEventMedia) {
+        return eventService.createEvent(request, coverImage, listEventMedia);
     }
 
     @PreAuthorize("hasRole('ORGANIZER')")
-    public void updateEvent(String slug, EventUpdateRequest request, boolean isDraft) {
-        eventService.updateEvent(slug, request, isDraft);
+    public EventResponse updateEvent(String slug, EventUpdateRequest request, MultipartFile coverImage, List<MultipartFile> listMediaFile) {
+        return eventService.updateEvent(slug, request, coverImage, listMediaFile);
     }
+
     // profile
     @PreAuthorize("hasRole('ORGANIZER')")
     public ProfileResponse getMyProfile() {

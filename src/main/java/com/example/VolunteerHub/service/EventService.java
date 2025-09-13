@@ -44,7 +44,7 @@ public class EventService {
     TypeTagService typeTagService;
     InterestService interestService;
 
-    public void createEvent(EventCreationRequest request, boolean isDraft) {
+    public EventResponse createEvent(EventCreationRequest request, MultipartFile coverImage, List<MultipartFile> listEventMedia) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
@@ -60,37 +60,9 @@ public class EventService {
 
         if (isExistedEventTitle)
             throw new AppException(ErrorCode.EVENT_EXISTED);
+        // các trường khác
 
-        Events event = Events.builder()
-                .user(user)
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .salary(request.getSalary())
-                .location(request.getLocation())
-                .detailLocation(request.getDetailLocation())
-                .startAt(request.getStartAt())
-                .endAt(request.getEndAt())
-                .deadline(request.getDeadline())
-                .autoAccept(request.isAutoAccept())
-                .type(request.getType())
-                .minAge(request.getMinAge())
-                .maxAge(request.getMaxAge())
-                .maxVolunteer(request.getMaxVolunteer())
-                .sex(request.getSex())
-                .experience(request.getExperience())
-                .coverImage(request.getCoverImage())
-                .online(request.isOnline())
-                .leaderName(request.getLeaderName())
-                .leaderPhone(request.getLeaderPhone())
-                .leader_email(request.getLeaderEmail())
-                .subContact(request.getSubContact())
-                .priority(request.getPriority())
-                .status(isDraft ? EventStatusEnum.DRAFT :
-                        role == RoleEnum.ADMIN ? EventStatusEnum.IS_PUBLISHED : EventStatusEnum.PENDING
-                )
-                .updatedAt(LocalDateTime.now())
-                .createdAt(LocalDateTime.now())
-                .build();
+        Events event = EventMapper.mapToEntity(request, user, request.isDraft());
 
         // Category
         if (request.getCategories() != null) {
@@ -111,6 +83,7 @@ public class EventService {
                             .requiredSkill(requiredSkillService.getRequiredSkillByString(skill))
                             .build())
                     .toList();
+
             event.setEventRequiredSkills(skills);
         }
 
@@ -120,14 +93,14 @@ public class EventService {
                     .map(tag -> EventTypeTag.builder()
                             .event(event)
                             .typeTag(typeTagService.getTypeTagByString(tag))
-                            .build())
-                    .toList();
+                            .build()
+            ).toList();
             event.setEventTypeTags(tags);
         }
 
         // Interest
-        if (request.getInterest() != null) {
-            List<EventInterest> interests = request.getInterest().stream()
+        if (request.getInterests() != null) {
+            List<EventInterest> interests = request.getInterests().stream()
                     .map(interest -> EventInterest.builder()
                             .event(event)
                             .interest(interestService.getInterestByString(interest))
@@ -137,35 +110,57 @@ public class EventService {
         }
 
         List<EventMedias> eventMediasList = new ArrayList<>();
+        String coverUrl = null;
 
-        for (MultipartFile thisFile : request.getListEventMedia()) {
-            if (!thisFile.isEmpty()) {
-                Map<String, String> file;
+        if (coverImage != null && !coverImage.isEmpty()) {
+            log.info("có ảnh");
+            Map<String, String> file;
 
-                try {
-                    file = cloudinaryService.uploadFile(thisFile);
-                } catch (IOException e) {
-                    throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+            try {
+                file = cloudinaryService.uploadFile(coverImage);
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+            }
+
+            coverUrl = file.get("url");
+        } else {
+//            coverUrl = null;
+        }
+
+        event.setCoverImage(coverUrl);
+
+        if (listEventMedia != null && !listEventMedia.isEmpty()) {
+            for (MultipartFile thisFile : listEventMedia) {
+                if (thisFile != null && !thisFile.isEmpty()) {
+                    Map<String, String> file;
+
+                    try {
+                        file = cloudinaryService.uploadFile(thisFile);
+                    } catch (IOException e) {
+                        throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+                    }
+
+                    String fileUrl = file.get("url");
+                    String fileType = file.get("type");
+
+                    EventMedias media = EventMedias.builder()
+                            .mediaType(fileType.equals("VIDEO") ? MediaTypeEnum.VIDEO : MediaTypeEnum.IMAGE)
+                            .mediaUrl(fileUrl)
+                            .event(event)
+                            .build();
+
+                    eventMediasList.add(media);
                 }
-
-                String fileUrl = file.get("url");
-                String fileType = file.get("type");
-
-                EventMedias media = EventMedias.builder()
-                        .mediaType(fileType.equals("VIDEO") ? MediaTypeEnum.VIDEO : MediaTypeEnum.IMAGE)
-                        .mediaUrl(fileUrl)
-                        .event(event)
-                        .build();
-
-                eventMediasList.add(media);
             }
         }
         event.setEventMedia(eventMediasList);
 
         eventRepository.save(event);
+
+        return EventMapper.mapToResponse(event);
     }
 
-    public void updateEvent(String slug, EventUpdateRequest request, boolean isDraft) {
+    public EventResponse updateEvent(String slug, EventUpdateRequest request, MultipartFile coverImage, List<MultipartFile> listMediaFile) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
@@ -185,9 +180,26 @@ public class EventService {
                     request.getListDeleteMediaId().contains(eventMedia.getId()));
         }
 
-        if (request.getListEventMedia() != null && !request.getListEventMedia().isEmpty()) {
-            for (MultipartFile thisFile : request.getListEventMedia()) {
-                if (!thisFile.isEmpty()) {
+        List<EventMedias> eventMediasList = new ArrayList<>();
+        String coverUrl = null;
+
+        if (coverImage != null && !coverImage.isEmpty()) {
+            Map<String, String> file;
+
+            try {
+                file = cloudinaryService.uploadFile(coverImage);
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.FILE_UPLOAD_ERROR);
+            }
+
+            coverUrl = file.get("url");
+        }
+        event.setCoverImage(coverUrl);
+
+        if (listMediaFile != null && !listMediaFile.isEmpty()) {
+            log.info("cos anh");
+            for (MultipartFile thisFile : listMediaFile) {
+                if (thisFile != null && !thisFile.isEmpty()) {
                     Map<String, String> file;
 
                     try {
@@ -205,26 +217,156 @@ public class EventService {
                             .event(event)
                             .build();
 
-                    event.getEventMedia().add(media);
+                    eventMediasList.add(media);
                 }
             }
         }
+        if (listMediaFile != null && !listMediaFile.isEmpty()) {
+            for (EventMedias media : eventMediasList) {
+                media.setEvent(event);
+                event.getEventMedia().add(media);
+            }
+        }
 
-        event.setStatus(isDraft
+        // Update categories
+        if (request.getCategories() != null) {
+            List<EventCategory> categories = request.getCategories().stream()
+                    .map(cat -> EventCategory.builder()
+                            .event(event)
+                            .category(categoryService.getCategoryByString(cat))
+                            .build())
+                    .toList();
+            event.setEventCategories(categories);
+        }
+
+        // Update skills
+        if (request.getSkills() != null) {
+            List<EventRequiredSkill> skills = request.getSkills().stream()
+                    .map(skill -> EventRequiredSkill.builder()
+                            .event(event)
+                            .requiredSkill(requiredSkillService.getRequiredSkillByString(skill))
+                            .build())
+                    .toList();
+            event.setEventRequiredSkills(skills);
+        }
+
+        // Update tags
+        if (request.getTags() != null) {
+            List<EventTypeTag> tags = request.getTags().stream()
+                    .map(tag -> EventTypeTag.builder()
+                            .event(event)
+                            .typeTag(typeTagService.getTypeTagByString(tag))
+                            .build())
+                    .toList();
+            event.setEventTypeTags(tags);
+        }
+
+        // Update interests
+        if (request.getInterests() != null) {
+            List<EventInterest> interests = request.getInterests().stream()
+                    .map(interest -> EventInterest.builder()
+                            .event(event)
+                            .interest(interestService.getInterestByString(interest))
+                            .build())
+                    .toList();
+            event.setEventInterests(interests);
+        }
+
+        EventStatusEnum oldStatus = event.getStatus();
+        EventStatusEnum newStatus =
+                request.isDraft()
                 ? EventStatusEnum.DRAFT
                 : user.getRole().getRole() == RoleEnum.ADMIN
-                    ? EventStatusEnum.IS_PUBLISHED
-                    : EventStatusEnum.PENDING
-        );
-        event.setLocation(request.getLocation());
-        event.setDescription(request.getDescription());
-        event.setSalary(request.getSalary());
-        event.setStartAt(request.getStartAt());
-        event.setEndAt(request.getEndAt());
-        event.setDeadline(request.getDeadline());
-        event.setMaxVolunteer(request.getMaxVolunteer());
+                        ? EventStatusEnum.IS_PUBLISHED
+                        : EventStatusEnum.PENDING;
 
-        eventRepository.save(event);
+        event.setStatus(newStatus);
+        event.getSchedule().setUpdatedAt(LocalDateTime.now());
+
+        if (oldStatus == EventStatusEnum.DRAFT && newStatus == EventStatusEnum.IS_PUBLISHED) {
+            event.getSchedule().setCreatedAt(LocalDateTime.now());
+        }
+
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            event.setTitle(request.getTitle());
+        }
+
+        if (request.getLocation() != null && !request.getLocation().isBlank()) {
+            event.setLocation(request.getLocation());
+        }
+
+        if (request.getDetailLocation() != null && !request.getDetailLocation().isBlank()) {
+            event.setDetailLocation(request.getDetailLocation());
+        }
+
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+            event.setDescription(request.getDescription());
+        }
+
+        if (request.getSalary() != null) {
+            event.setSalary(request.getSalary());
+        }
+
+        if (request.getPriority() != null) {
+            event.setPriority(request.getPriority());
+        }
+
+        if (request.getType() != null) {
+            event.setType(request.getType());
+        }
+
+        if (request.getStartAt() != null) {
+            event.getSchedule().setStartAt(request.getStartAt());
+        }
+        if (request.getEndAt() != null) {
+            event.getSchedule().setEndAt(request.getEndAt());
+        }
+        if (request.getDeadline() != null) {
+            event.getSchedule().setDeadline(request.getDeadline());
+        }
+
+        // Requirements
+        if (request.getMaxVolunteer() != null) {
+            event.getRequirements().setMaxVolunteer(request.getMaxVolunteer());
+        }
+        if (request.getMinAge() != null) {
+            event.getRequirements().setMinAge(request.getMinAge());
+        }
+        if (request.getMaxAge() != null) {
+            event.getRequirements().setMaxAge(request.getMaxAge());
+        }
+        if (request.getSex() != null) {
+            event.getRequirements().setSex(request.getSex());
+        }
+        if (request.getExperience() != null) {
+            event.getRequirements().setExperience(request.getExperience());
+        }
+
+        // Leader
+        if (request.getLeaderName() != null && !request.getLeaderName().isBlank()) {
+            event.getLeader().setLeaderName(request.getLeaderName());
+        }
+        if (request.getLeaderPhone() != null && !request.getLeaderPhone().isBlank()) {
+            event.getLeader().setLeaderPhone(request.getLeaderPhone());
+        }
+        if (request.getLeaderEmail() != null && !request.getLeaderEmail().isBlank()) {
+            event.getLeader().setLeader_email(request.getLeaderEmail());
+        }
+        if (request.getSubContact() != null && !request.getSubContact().isBlank()) {
+            event.getLeader().setSubContact(request.getSubContact());
+        }
+
+        if (request.getOnline() != null) {
+            event.setOnline(request.getOnline());
+        }
+
+        if (request.getAutoAccept() != null) {
+            event.setAutoAccept(request.getAutoAccept());
+        }
+
+        Events eventResponse = eventRepository.save(event);
+
+        return EventMapper.mapToResponse(eventResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -326,7 +468,7 @@ public class EventService {
                 eventRepository.findExpiredEvents(LocalDateTime.now(), EventStatusEnum.IS_PUBLISHED, pageable);
 
         return eventList.stream()
-                .filter(event -> LocalDateTime.now().isAfter(event.getEndAt()))
+                .filter(event -> LocalDateTime.now().isAfter(event.getSchedule().getEndAt()))
                 .map(EventMapper::mapToResponse)
                 .toList();
     }
@@ -341,10 +483,13 @@ public class EventService {
         Events event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
 
-        if (!(event.getStatus() == EventStatusEnum.IS_PUBLISHED) &&
-                (user.getRole().getRole() != RoleEnum.ADMIN &&
-                        !eventRepository.isEventOwner(user.getId(), event.getId())))
+        boolean isPublished = event.getStatus() == EventStatusEnum.IS_PUBLISHED;
+        boolean isOwner = eventRepository.isEventOwner(user.getId(), event.getId());
+        boolean isAdmin = user.getRole().getRole() == RoleEnum.ADMIN;
+
+        if (!isPublished && !isAdmin && !isOwner)
             throw new AppException(ErrorCode.UNAUTHORIZED);
+
 
         return EventMapper.mapToResponse(event);
     }
@@ -361,9 +506,11 @@ public class EventService {
         if (event == null)
             throw new AppException(ErrorCode.EVENT_NOT_EXISTED);
 
-        if (!(event.getStatus() == EventStatusEnum.IS_PUBLISHED) &&
-                (user.getRole().getRole() != RoleEnum.ADMIN &&
-                        !eventRepository.isEventOwner(user.getId(), event.getId())))
+        boolean isPublished = event.getStatus() == EventStatusEnum.IS_PUBLISHED;
+        boolean isOwner = eventRepository.isEventOwner(user.getId(), event.getId());
+        boolean isAdmin = user.getRole().getRole() == RoleEnum.ADMIN;
+
+        if (!isPublished && !isAdmin && !isOwner)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         return EventMapper.mapToResponse(event);
@@ -390,7 +537,12 @@ public class EventService {
         Events event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_EXISTED));
 
+        if (event.getStatus() != EventStatusEnum.PENDING)
+            throw new AppException(ErrorCode.EVENT_NOT_PENDING);
+
+        event.getSchedule().setCreatedAt(LocalDateTime.now());
         event.setStatus(EventStatusEnum.IS_PUBLISHED);
+        event.getSchedule().setUpdatedAt(LocalDateTime.now());
 
         eventRepository.save(event);
     }

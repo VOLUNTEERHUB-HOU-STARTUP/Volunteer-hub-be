@@ -1,13 +1,19 @@
 package com.example.VolunteerHub.controller;
 
-import com.example.VolunteerHub.dto.request.ServiceCreationRequest;
+import com.example.VolunteerHub.dto.request.*;
 import com.example.VolunteerHub.dto.response.*;
 import com.example.VolunteerHub.service.AdminDashboardService;
 import com.example.VolunteerHub.service.EventService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +34,43 @@ public class AdminDashboardController {
 //    }
 
     // event management
+    @PostMapping(value = "/events/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<Void> createEvent(
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia
+    ) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        EventCreationRequest request = mapper.readValue(eventJson, EventCreationRequest.class);
+
+        adminDashboardService.createEvent(request, coverImage, listEventMedia);
+
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @PatchMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<Void> updateEvent(
+            @PathVariable String slug,
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia
+    ) throws JsonProcessingException {
+        // gửi đúng thứ tự
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        EventUpdateRequest request = mapper.readValue(eventJson, EventUpdateRequest.class);
+        adminDashboardService.updateEvent(slug, request, coverImage, listEventMedia);
+
+        return ApiResponse.<Void>builder().build();
+    }
+
     @GetMapping("/events")
     ApiResponse<List<EventResponse>> getListEventWithPaging(
             @RequestParam(defaultValue = "0") int page,
@@ -149,5 +192,94 @@ public class AdminDashboardController {
 
         return ApiResponse.<Void>builder()
                 .build();
+    }
+
+    // Event category
+    @GetMapping("/categories")
+    ApiResponse<List<CategoryResponse>> getListCategory() {
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .result(adminDashboardService.getListCategory())
+                .build();
+    }
+
+    @GetMapping("/categories/{value}")
+    ApiResponse<CategoryResponse> getDetailCategory(@PathVariable String value) {
+        return ApiResponse.<CategoryResponse>builder()
+                .result(adminDashboardService.getDetailCategory(value))
+                .build();
+    }
+
+    @PostMapping("/categories/create")
+    ApiResponse<Void> createCategory(@RequestBody CategoryCreationRequest request) {
+        adminDashboardService.createCategory(request);
+
+        return ApiResponse.<Void>builder()
+                .build();
+    }
+
+    // event interest
+    @GetMapping("/interests")
+    ApiResponse<List<InterestResponse>> getListInterest() {
+        return ApiResponse.<List<InterestResponse>>builder()
+                .result(adminDashboardService.getListInterest())
+                .build();
+    }
+
+    @GetMapping("/interests/{value}")
+    ApiResponse<InterestResponse> getDetailInterest(@PathVariable String value) {
+        return ApiResponse.<InterestResponse>builder()
+                .result(adminDashboardService.getDetailInterest(value))
+                .build();
+    }
+
+    @PostMapping("/interests/create")
+    ApiResponse<Void> createInterest(@RequestBody InterestRequest request) {
+        adminDashboardService.createInterest(request);
+
+        return ApiResponse.<Void>builder().build();
+    }
+
+    // required skill
+    @GetMapping("/required-skills")
+    ApiResponse<List<RequiredSkillResponse>> getListRequiredSkill() {
+        return ApiResponse.<List<RequiredSkillResponse>>builder()
+                .result(adminDashboardService.getListRequiredSkill())
+                .build();
+    }
+
+    @GetMapping("/required-skills/{value}")
+    ApiResponse<RequiredSkillResponse> getDetailRRequiredSkill(@PathVariable String value) {
+        return ApiResponse.<RequiredSkillResponse>builder()
+                .result(adminDashboardService.getDetailRequiredSkill(value))
+                .build();
+    }
+
+    @PostMapping("/required-skills/create")
+    ApiResponse<Void> createRequiredSKill(@RequestBody RequiredSkillRequest request) {
+        adminDashboardService.createRequiredSkill(request);
+
+        return ApiResponse.<Void>builder().build();
+    }
+
+    // type tag
+    @GetMapping("/type-tags")
+    ApiResponse<List<TypeTagResponse>> getListTypeTag() {
+        return ApiResponse.<List<TypeTagResponse>>builder()
+                .result(adminDashboardService.getListTypeTag())
+                .build();
+    }
+
+    @GetMapping("/type-tags/{value}")
+    ApiResponse<TypeTagResponse> getDetailTypeTag(@PathVariable String value) {
+        return ApiResponse.<TypeTagResponse>builder()
+                .result(adminDashboardService.getDetailTypeTag(value))
+                .build();
+    }
+
+    @PostMapping("/type-tags/create")
+    ApiResponse<Void> createTypeTag(@RequestBody TypeTagRequest request) {
+        adminDashboardService.createTypeTag(request);
+
+        return ApiResponse.<Void>builder().build();
     }
 }

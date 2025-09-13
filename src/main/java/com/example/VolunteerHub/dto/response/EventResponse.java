@@ -47,13 +47,14 @@ public class EventResponse {
     String leaderEmail;
     String subContact;
 
-    PriorityEnum priority;
-    EventTypeEnum type;
+    PriorityEnum priority; // mức khẩn cấp
+    EventTypeEnum type; // loại (lợi nhuận/ phi lợi nhuận)
 
-    List<String> categories;
-    List<String> skills;
-    List<String> tags;
+    List<CategoryResponse> categories; // phân loại skien
+    List<RequiredSkillResponse> skills; // skill cần thiết
+    List<TypeTagResponse> tags; // thẻ tag phân loại sk
+    List<InterestResponse> interests; // lợi iích khi tham gia
 
-    List<Integer> likes;
-    List<Integer> comments;
+    int totalLike;
+    int totalComment;
 }

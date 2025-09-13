@@ -10,8 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface InterestRepository extends JpaRepository<Interests, UUID> {
-    @Query("select i from Interests i " +
-            "where i.value = :value")
+    @Query("SELECT i FROM Interests i WHERE LOWER(i.value) = LOWER(:value)")
     Interests findByValue(String value);
 
     boolean existsByValue(String value);

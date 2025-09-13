@@ -10,8 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface RequiredSkillRepository extends JpaRepository<RequiredSkills, UUID> {
-    @Query("select r from RequiredSkills r " +
-            "where r.value = :value")
+    @Query("SELECT s FROM RequiredSkills s WHERE LOWER(s.value) = LOWER(:value)")
     RequiredSkills findByValue(String value);
 
     boolean existsByValue(String value);

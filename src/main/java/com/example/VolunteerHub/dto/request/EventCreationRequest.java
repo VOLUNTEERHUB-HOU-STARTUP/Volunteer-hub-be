@@ -42,9 +42,7 @@ public class EventCreationRequest {
 
     int minAge;
     int maxAge;
-    SexEnum sex;
-    ExperienceEnum experience;
-    String coverImage;
+
     boolean online;
 
     String leaderName;
@@ -52,16 +50,16 @@ public class EventCreationRequest {
     String leaderEmail;
     String subContact;
 
+    SexEnum sex;
+    ExperienceEnum experience;
     PriorityEnum priority;
     EventTypeEnum type;
 
     List<String> categories;
     List<String> skills;
     List<String> tags;
-    List<String> interest;
+    List<String> interests;
     String descriptionBenefit;
 
-    boolean draft;
-
-    List<MultipartFile> listEventMedia;
+    boolean isDraft;
 }

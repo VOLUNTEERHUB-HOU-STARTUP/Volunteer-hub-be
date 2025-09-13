@@ -9,8 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Categories, UUID> {
-    @Query("select c from Categories c " +
-            "where c.value = :value")
+    @Query("SELECT c FROM Categories c WHERE LOWER(c.value) = LOWER(:value)")
     Categories findByValue(String value);
 
     boolean existsByValue(String value);

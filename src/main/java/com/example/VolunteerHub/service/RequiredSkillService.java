@@ -30,6 +30,14 @@ public class RequiredSkillService {
         return requiredSkills.stream().map(RequiredSkillMapper::toResponse).toList();
     }
 
+    public RequiredSkillResponse getDetail(String stringText) {
+        RequiredSkills requiredSkill = requiredSkillRepository.findByValue(stringText.toLowerCase());
+
+        if (requiredSkill == null) throw new AppException(ErrorCode.REQUIRED_SKILL_NOT_FOUND);
+
+        return RequiredSkillMapper.toResponse(requiredSkill);
+    }
+
     public RequiredSkills getRequiredSkillByString(String stringText) {
         RequiredSkills requiredSkill = requiredSkillRepository.findByValue(stringText.toLowerCase());
 

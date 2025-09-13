@@ -10,14 +10,16 @@ import com.example.VolunteerHub.repository.TypeTagRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TypeTagService {
     TypeTagRepository typeTagRepository;
 
@@ -25,6 +27,13 @@ public class TypeTagService {
         List<TypeTags> interests = typeTagRepository.findAll();
 
         return interests.stream().map(TypeTagMapper::toResponse).toList();
+    }
+
+    public TypeTagResponse getDetail(String stringText) {
+        TypeTags typeTag = typeTagRepository.findByValue(stringText.toLowerCase());
+        if (typeTag == null) throw new AppException(ErrorCode.TYPE_TAG_NOT_FOUND);
+
+        return TypeTagMapper.toResponse(typeTag);
     }
 
     public TypeTags getTypeTagByString(String stringText) {

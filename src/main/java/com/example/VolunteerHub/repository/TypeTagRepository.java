@@ -9,8 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface TypeTagRepository extends JpaRepository<TypeTags, UUID> {
-    @Query("select t from TypeTags t " +
-            "where t.value = :value")
+    @Query("SELECT t FROM TypeTags t WHERE LOWER(t.value) = LOWER(:value)")
     TypeTags findByValue(String value);
 
     boolean existsByValue(String value);

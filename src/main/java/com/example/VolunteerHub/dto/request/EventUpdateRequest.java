@@ -7,6 +7,7 @@ import com.example.VolunteerHub.enums.SexEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -21,39 +22,45 @@ import java.util.UUID;
 public class EventUpdateRequest {
     String title;
     String description;
-    float salary;
+    Float salary;
     String location;
     String detailLocation;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime startAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime endAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime deadline;
-    int maxVolunteer;
+    Integer maxVolunteer;
 
-    int minAge;
-    int maxAge;
+    Integer minAge;
+    Integer maxAge;
     SexEnum sex;
-    ExperienceEnum experience;
-    String coverImage;
-    boolean online;
+
+    Boolean online;
+    Boolean autoAccept;
 
     String leaderName;
     String leaderPhone;
     String leaderEmail;
     String subContact;
 
+    ExperienceEnum experience;
     PriorityEnum priority;
     EventTypeEnum type;
 
     List<String> categories;
     List<String> skills;
     List<String> tags;
+    List<String> interests;
 
     List<UUID> listDeleteMediaId;
-    List<MultipartFile> listEventMedia;
+
+    boolean isDraft;
 }

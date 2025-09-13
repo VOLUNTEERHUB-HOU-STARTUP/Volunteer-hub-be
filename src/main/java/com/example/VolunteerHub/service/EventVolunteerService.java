@@ -138,7 +138,6 @@ public class EventVolunteerService {
         return rejectedPage.stream().map(EventVolunteerMapper::toEventVolunteerResponse).toList();
     }
 
-
     public void handlingVolunteerRequest(UUID eventId, UUID volunteerId, boolean accept) {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
