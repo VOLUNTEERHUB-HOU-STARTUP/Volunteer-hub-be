@@ -8,20 +8,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin")
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminDashboardController {
     AdminDashboardService adminDashboardService;
     EventService eventService;
@@ -33,12 +39,32 @@ public class AdminDashboardController {
 //                .build();
 //    }
 
+    @PostMapping("/events/{slug}/debug-parts")
+    public ResponseEntity<String> debugParts(HttpServletRequest request) throws Exception {
+        System.out.println("Content-Type = " + request.getContentType());
+        try {
+            Collection<Part> parts = request.getParts();
+            System.out.println("parts count = " + (parts == null ? "null" : parts.size()));
+            if (parts != null) {
+                for (Part p : parts) {
+                    System.out.println("part name=" + p.getName()
+                            + " filename=" + p.getSubmittedFileName()
+                            + " size=" + p.getSize());
+                }
+            }
+            return ResponseEntity.ok("ok");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
     // event management
     @PostMapping(value = "/events/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<Void> createEvent(
             @RequestPart("event") String eventJson,
-            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
-            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia
+            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage
     ) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
@@ -52,23 +78,26 @@ public class AdminDashboardController {
         return ApiResponse.<Void>builder().build();
     }
 
-    @PatchMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ApiResponse<Void> updateEvent(
-            @PathVariable String slug,
-            @RequestPart("event") String eventJson,
+    @PostMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ApiResponse<EventResponse> updateEvent(
+            @RequestPart(value = "event") String eventJson,
             @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
-            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia
+            @RequestPart(value = "listEventMedia", required = false) List<MultipartFile> listEventMedia,
+            @PathVariable String slug
     ) throws JsonProcessingException {
         // gửi đúng thứ tự
+//        System.out.println("coverImage = " + (coverImage != null ? coverImage : "null"));
+//        System.out.println("listEventMedia = " + (listEventMedia != null ? listEventMedia.size() : "null"));
         ObjectMapper mapper = new ObjectMapper();
 
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         EventUpdateRequest request = mapper.readValue(eventJson, EventUpdateRequest.class);
-        adminDashboardService.updateEvent(slug, request, coverImage, listEventMedia);
 
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<EventResponse>builder()
+                .result(adminDashboardService.updateEvent(slug, request, coverImage, listEventMedia))
+                .build();
     }
 
     @GetMapping("/events")

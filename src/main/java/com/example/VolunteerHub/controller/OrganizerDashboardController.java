@@ -5,7 +5,6 @@ import com.example.VolunteerHub.dto.request.EventUpdateRequest;
 import com.example.VolunteerHub.dto.request.ProfileUpdateRequest;
 import com.example.VolunteerHub.dto.request.VolunteerRatingRequest;
 import com.example.VolunteerHub.dto.response.*;
-import com.example.VolunteerHub.entity.EventMedias;
 import com.example.VolunteerHub.service.OrganizerDashboardService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -88,7 +87,7 @@ public class OrganizerDashboardController {
                 .build();
     }
 
-    @PatchMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/events/{slug}/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<EventResponse> updateEvent(
             @RequestPart("event") String eventJson,
             @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,

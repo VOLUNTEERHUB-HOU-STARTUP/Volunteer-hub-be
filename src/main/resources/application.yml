@@ -38,6 +38,10 @@ spring:
       enabled: true
       max-file-size: 20MB
       max-request-size: 20MB
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
 server:
   port: 8080
   address: 0.0.0.0

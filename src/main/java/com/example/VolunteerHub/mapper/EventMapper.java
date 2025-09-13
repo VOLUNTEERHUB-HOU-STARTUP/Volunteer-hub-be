@@ -29,6 +29,7 @@ public class EventMapper {
                 .priority(request.getPriority())
                 .type(request.getType())
                 .autoAccept(request.isAutoAccept())
+                .salary(request.getSalary())
                 .status(status)
                 .build();
 

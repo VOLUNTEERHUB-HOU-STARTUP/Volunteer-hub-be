@@ -123,8 +123,6 @@ public class EventService {
             }
 
             coverUrl = file.get("url");
-        } else {
-//            coverUrl = null;
         }
 
         event.setCoverImage(coverUrl);
@@ -197,7 +195,6 @@ public class EventService {
         event.setCoverImage(coverUrl);
 
         if (listMediaFile != null && !listMediaFile.isEmpty()) {
-            log.info("cos anh");
             for (MultipartFile thisFile : listMediaFile) {
                 if (thisFile != null && !thisFile.isEmpty()) {
                     Map<String, String> file;
@@ -364,9 +361,9 @@ public class EventService {
             event.setAutoAccept(request.getAutoAccept());
         }
 
-        Events eventResponse = eventRepository.save(event);
+//        Events eventResponse = eventRepository.save(event);
 
-        return EventMapper.mapToResponse(eventResponse);
+        return EventMapper.mapToResponse(event);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

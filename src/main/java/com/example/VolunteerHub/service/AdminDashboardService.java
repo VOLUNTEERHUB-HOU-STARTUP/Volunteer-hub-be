@@ -30,14 +30,14 @@ public class AdminDashboardService {
 //
 //    }
     //event
-    @PreAuthorize("hasRole('ORGANIZER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public void createEvent(EventCreationRequest request, MultipartFile coverImage, List<MultipartFile> listEventMedia) {
         eventService.createEvent(request, coverImage, listEventMedia);
     }
 
-    @PreAuthorize("hasRole('ORGANIZER')")
-    public void updateEvent(String slug, EventUpdateRequest request,MultipartFile coverImage,List<MultipartFile> listEventFile) {
-        eventService.updateEvent(slug, request, coverImage, listEventFile);
+    @PreAuthorize("hasRole('ADMIN')")
+    public EventResponse updateEvent(String slug, EventUpdateRequest request, MultipartFile coverImage, List<MultipartFile> listMediaFile) {
+        return eventService.updateEvent(slug, request, coverImage, listMediaFile);
     }
 
     // volunteer
